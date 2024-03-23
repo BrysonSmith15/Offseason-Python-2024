@@ -17,8 +17,10 @@ from commands2 import SubsystemBase
 from phoenix6.hardware import CANcoder
 from rev import CANSparkMax, CANSparkLowLevel, SparkRelativeEncoder
 from wpilib import RobotBase, RobotState
+import wpimath
 from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
 from wpimath.geometry import Translation2d, Rotation2d
+from wpimath.units import inchesToMeters
 from wpiutil import *
 
 # consts
@@ -54,6 +56,8 @@ class SwerveModule(SubsystemBase):
         turn_inverted: bool,
         drive_inverted: bool,
     ):
+        self.name = subsystem_name
+
         self.cancoder = CANcoder(encoder_id)
         self.turn_motor = CANSparkMax(turn_id, CANSparkLowLevel.MotorType.kBrushless)
         self.drive_motor = CANSparkMax(drive_id, CANSparkLowLevel.MotorType.kBrushless)
@@ -92,23 +96,37 @@ class SwerveModule(SubsystemBase):
 
         self.module_state = SwerveModuleState(0, Rotation2d(0))
 
-        def periodic(self) -> None:
-            pass
+    def periodic(self) -> None:
+        pass
 
-        def setDesiredState(self, desiredState: SwerveModuleState):
-            currAnglePos = self.turn_encoder.getPosition()
-            currAngleRotation = Rotation2d(0).fromDegrees(currAnglePos)
-            optimalState: SwerveModuleState = SwerveModuleState.optimize(
-                desiredState, currAngleRotation
-            )
-            self.module_state = optimalState
+    def setDesiredState(self, desiredState: SwerveModuleState):
+        currAnglePos = self.turn_encoder.getPosition()
+        currAngleRotation = Rotation2d(0).fromDegrees(currAnglePos)
+        optimalState: SwerveModuleState = SwerveModuleState.optimize(
+            desiredState, currAngleRotation
+        )
+        self.module_state = optimalState
 
-            velocity = optimalState.speed
-            self.drive_motor.set(CANSparkLowLevel.ControlType.kVelocity, velocity)
-            self.turn_motor.set(
-                CANSparkLowLevel.ControlType.kPosition, optimalState.angle.degrees / 180
-            )
+        velocity = optimalState.speed
+        self.drive_motor.set(CANSparkLowLevel.ControlType.kVelocity, velocity)
+        self.turn_motor.set(
+            CANSparkLowLevel.ControlType.kPosition, optimalState.angle.degrees / 180
+        )
 
+    def getModulePosition(self) -> Translation2d:
+        is_front = self.name[0] == "f"
+        is_left = self.name[1] == "l"
+        return Translation2d(
+            inchesToMeters(10.5) * (1 if is_front else -1),
+            inchesToMeters(10.5) * (1 if is_left else -1),
+        )
 
-m = SwerveModule("a", 1, 1, 1, 1, 1, 1)
-m.setDesiredState()
+    def getPosition(self) -> SwerveModulePosition:
+        # drive rotations
+        dPosition = self.drive_encoder.getPosition()
+        # rotations * 2pi * radius
+        dMeters = dPosition * 2 * math.pi * inchesToMeters(2.0)
+
+        thetaPosition = Rotation2d(0).fromDegrees(self.turn_encoder.getPosition())
+
+        return SwerveModulePosition(distance=dMeters, angle=thetaPosition)
