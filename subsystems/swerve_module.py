@@ -130,3 +130,13 @@ class SwerveModule(SubsystemBase):
         thetaPosition = Rotation2d(0).fromDegrees(self.turn_encoder.getPosition())
 
         return SwerveModulePosition(distance=dMeters, angle=thetaPosition)
+
+    def set_drive_idle(self, coast: bool):
+        self.drive_motor.setIdleMode(
+            CANSparkMax.IdleMode.kCoast if coast else CANSparkMax.IdleMode.kBrake
+        )
+
+    def set_turn_idle(self, coast: bool):
+        self.turn_motor.setIdleMode(
+            CANSparkMax.IdleMode.kCoast if coast else CANSparkMax.IdleMode.kBrake
+        )
