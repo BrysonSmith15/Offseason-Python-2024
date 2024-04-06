@@ -1,5 +1,5 @@
 import typing
-from commands2 import CommandBase
+from commands2 import Command
 from wpimath import applyDeadband
 from wpimath.geometry import Rotation2d
 
@@ -10,7 +10,7 @@ import math
 deadband = 0.1
 
 
-class Drive_Joystick(CommandBase):
+class Drive_Joystick(Command):
     def __init__(
         self,
         drive: Drivetrain,

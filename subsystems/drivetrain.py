@@ -1,4 +1,4 @@
-from commands2 import InstantCommand, SubsystemBase
+from commands2 import InstantCommand, Subsystem
 from hal import SerialPort
 from ntcore import NetworkTableInstance
 from wpilib import DriverStation, Field2d, RobotBase, RobotState, SmartDashboard, Timer
@@ -25,7 +25,7 @@ maxVelocity = feetToMeters(15)
 maxAnglularVelocity = 1 * math.pi
 
 
-class Drivetrain(SubsystemBase):
+class Drivetrain(Subsystem):
     class BooleanProperty:
         _name: str = ""
         _value: bool = False
@@ -50,7 +50,7 @@ class Drivetrain(SubsystemBase):
 
     def __init__(self):
         super().__init__()
-        self.subsystem("Drivetrain")
+
         self.setName("Drivetrain")
 
         self.robotName = "Robot"

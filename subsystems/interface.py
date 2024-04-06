@@ -69,3 +69,45 @@ class Interface:
 
     def get_drive_reset_gyro(self) -> Trigger:
         return self.driver_controller.button(self.lb_button)
+
+    # Operator Stuff
+
+    def get_elevator_up(self) -> Trigger:
+        if self.operator_controller:
+            return self.operator_controller.button(self.start_button)
+        else:
+            return self.driver_controller.button(self.y_button)
+
+    def get_elevator_down(self) -> Trigger:
+        if self.operator_controller:
+            return self.operator_controller.button(self.back_button)
+        else:
+            return self.driver_controller.button(self.a_button)
+
+    def get_intake_forward(self) -> Trigger:
+        if self.operator_controller:
+            return self.operator_controller.button(self.a_button)
+        else:
+            return self.driver_controller.pov(0)
+
+    def get_intake_reverse(self) -> Trigger:
+        if self.operator_controller:
+            return self.operator_controller.button(self.b_button)
+        else:
+            return self.driver_controller.pov(180)
+
+    def get_spin_shooter(self) -> Trigger:
+        if self.operator_controller:
+            return Trigger(
+                lambda: self.operator_controller.getRawAxis(self.rt_axis) > 0.15
+            )
+        else:
+            return self.driver_controller.button(self.x_button)
+
+    def get_intake_full(self) -> Trigger:
+        if self.operator_controller:
+            return Trigger(
+                lambda: self.operator_controller.getRawAxis(self.rt_axis) > 0.85
+            )
+        else:
+            return self.driver_controller.button(self.b_button)

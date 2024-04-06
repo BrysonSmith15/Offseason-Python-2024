@@ -17,11 +17,12 @@ from commands2 import SubsystemBase
 from phoenix6.hardware import CANcoder
 from rev import CANSparkMax, CANSparkLowLevel, SparkRelativeEncoder
 from wpilib import RobotBase, RobotState
-import wpimath
 from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
 from wpimath.geometry import Translation2d, Rotation2d
 from wpimath.units import inchesToMeters
 from wpiutil import *
+
+from utils import *
 
 # consts
 
@@ -37,8 +38,6 @@ turn_D = 0.0
 
 
 class SwerveModule(SubsystemBase):
-    motion_magic: bool = False
-
     drive_motor: CANSparkMax = None
     turn_motor: CANSparkMax = None
     cancoder: CANcoder = None
@@ -108,9 +107,9 @@ class SwerveModule(SubsystemBase):
         self.module_state = optimalState
 
         velocity = optimalState.speed
-        self.drive_motor.set(CANSparkLowLevel.ControlType.kVelocity, velocity)
-        self.turn_motor.set(
-            CANSparkLowLevel.ControlType.kPosition, optimalState.angle.degrees / 180
+        self.drive_motor.setReference(velocity, CANSparkLowLevel.ControlType.kVelocity)
+        self.turn_motor.setReference(
+            optimalState.angle.degrees / 180, CANSparkLowLevel.ControlType.kPosition
         )
 
     def getModulePosition(self) -> Translation2d:

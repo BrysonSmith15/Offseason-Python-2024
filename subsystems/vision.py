@@ -1,5 +1,5 @@
 from robotpy_apriltag import AprilTagField
-from commands2 import SubsystemBase
+from commands2 import Subsystem
 from photonlibpy.photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
 from photonlibpy.photonCamera import PhotonCamera
 import typing
@@ -8,7 +8,7 @@ from wpimath.geometry import Transform3d, Rotation3d
 from wpimath.units import inchesToMeters, degreesToRadians
 
 
-class Vision(SubsystemBase):
+class Vision(Subsystem):
     def __init__(
         self, get_odometry: typing.Callable[[], SwerveDrive4PoseEstimator]
     ) -> None:
@@ -65,4 +65,18 @@ class Vision(SubsystemBase):
                 inchesToMeters(8.0),
                 Rotation3d(0, 0, degreesToRadians(-135)),
             ),
+        )
+
+    def periodic(self) -> None:
+        self.get_odometry().addVisionMeasurement(
+            self.flEstimator.update(self.fl.getLatestResult()).estimatedPose.toPose2d()
+        )
+        self.get_odometry().addVisionMeasurement(
+            self.frEstimator.update(self.fr.getLatestResult()).estimatedPose.toPose2d()
+        )
+        self.get_odometry().addVisionMeasurement(
+            self.blEstimator.update(self.bl.getLatestResult()).estimatedPose.toPose2d()
+        )
+        self.get_odometry().addVisionMeasurement(
+            self.brEstimator.update(self.br.getLatestResult()).estimatedPose.toPose2d()
         )

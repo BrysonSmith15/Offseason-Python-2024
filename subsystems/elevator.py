@@ -1,0 +1,80 @@
+from sys import last_value
+from commands2 import Subsystem
+from wpilib import DigitalInput, Encoder
+from wpimath.filter import SlewRateLimiter
+from ntcore import NetworkTableInstance
+
+from rev import CANSparkLowLevel, CANSparkMax
+
+from constants import elevator_constants
+from utils import *
+
+
+class Elevator(Subsystem):
+    def __init__(self):
+        self.setName("Elevator")
+
+        self.motor_l1 = CANSparkMax(26, CANSparkLowLevel.MotorType.kBrushed)
+        self.motor_l2 = CANSparkMax(27, CANSparkLowLevel.MotorType.kBrushed)
+        self.motor_r1 = CANSparkMax(24, CANSparkLowLevel.MotorType.kBrushed)
+        self.motor_r2 = CANSparkMax(25, CANSparkLowLevel.MotorType.kBrushed)
+
+        self.motor_l2.follow(self.motor_l1, False)
+        self.motor_r1.follow(self.motor_l1, True)
+        self.motor_r2.follow(self.motor_l1, True)
+
+        self.rate_limiter = SlewRateLimiter(2)
+
+        self.top_limit = DigitalInput(0)
+        self.bot_limit = DigitalInput(0)
+
+        self.encoder = Encoder(8, 9)
+
+        motors = [self.motor_l1, self.motor_l2, self.motor_r1, self.motor_r2]
+        for motor in motors:
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 500)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 500)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 500)
+
+        self.encoder.setReverseDirection(True)
+
+        self.addChild("Left Motor 1", self.motor_l1)
+        self.addChild("Left Motor 2", self.motor_l2)
+        self.addChild("Right Motor 1", self.motor_r1)
+        self.addChild("Right Motor 2", self.motor_r2)
+        self.addChild("Top Limit Switch", self.top_limit)
+        self.addChild("Bottom Limit Switch", self.bot_limit)
+        self.addChild("Encocer", self.encoder)
+
+        self.stable_tick_getter = NTTunableInt(
+            "/Config/Elevator/StableTicksOffset", 0, persistent=True
+        )
+        self.tick_offset = 0
+
+    def top_pressed(self) -> bool:
+        return self.top_limit.get()
+
+    def bot_pressed(self) -> bool:
+        return self.bot_limit.get()
+
+    def set_motors(self, power: float) -> None:
+        power = -power
+        if (
+            (power > 0 and self.top_pressed())
+            or (power < 0 and self.bot_pressed())
+            or power == 0
+        ):
+            power = 0
+        else:
+            power = 1 if power > 1 else -1 if power < -1 else power
+            power = self.rate_limiter.calculate(power)
+        self.motor_l1.set(power)
+
+    def get_ticks(self) -> int:
+        return self.encoder.get()
+
+    def periodic(self) -> None:
+        if self.bot_pressed():
+            self.encoder.reset()
+        if self.tick_offset != self.stable_tick_getter.get():
+            self.tick_offset = self.stable_tick_getter.get()
