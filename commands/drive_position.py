@@ -3,7 +3,6 @@ from wpimath.controller import PIDController
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.units import inchesToMeters
 from subsystems.drivetrain import Drivetrain
-from utils.NT_Tunable_Float import NTTunableFloat
 
 
 class Drive_Position(Command):
@@ -13,37 +12,9 @@ class Drive_Position(Command):
         self.addRequirements(drivetrain)
         self.desired = desired_position
 
-        self.xp_tuner = NTTunableFloat(
-            "Positional Drive X P Value", 6e-5, persistent=True
-        )
-        self.xi_tuner = NTTunableFloat("Positional Drive X I Value", 0, persistent=True)
-        self.xd_tuner = NTTunableFloat("Positional Drive X D Value", 0, persistent=True)
-
-        self.yp_tuner = NTTunableFloat(
-            "Positional Drive Y P Value", 6e-5, persistent=True
-        )
-        self.yi_tuner = NTTunableFloat("Positional Drive Y I Value", 0, persistent=True)
-        self.yd_tuner = NTTunableFloat("Positional Drive Y D Value", 0, persistent=True)
-
-        self.tp_tuner = NTTunableFloat(
-            "Positional Drive Rotation P Value", 6e-5, persistent=True
-        )
-        self.ti_tuner = NTTunableFloat(
-            "Positional Drive Rotation I Value", 0, persistent=True
-        )
-        self.td_tuner = NTTunableFloat(
-            "Positional Drive Rotation D Value", 0, persistent=True
-        )
-
-        self.x_pid = PIDController(
-            self.xp_tuner.get(), self.xi_tuner.get(), self.xd_tuner.get()
-        )
-        self.y_pid = PIDController(
-            self.yp_tuner.get(), self.yi_tuner.get(), self.yd_tuner.get()
-        )
-        self.t_pid = PIDController(
-            self.tp_tuner.get(), self.ti_tuner.get(), self.td_tuner.get()
-        )
+        self.x_pid = PIDController(6e-5, 0, 0)
+        self.y_pid = PIDController(6e-5, 0, 0)
+        self.t_pid = PIDController(6e-5, 0, 0)
 
         self.t_pid.enableContinuousInput(-180, 180)
 
@@ -55,17 +26,6 @@ class Drive_Position(Command):
         self.x_pid.reset()
         self.y_pid.reset()
         self.t_pid.reset()
-
-        # reset values in an easy way
-        self.x_pid = PIDController(
-            self.xp_tuner.get(), self.xi_tuner.get(), self.xd_tuner.get()
-        )
-        self.y_pid = PIDController(
-            self.yp_tuner.get(), self.yi_tuner.get(), self.yd_tuner.get()
-        )
-        self.t_pid = PIDController(
-            self.tp_tuner.get(), self.ti_tuner.get(), self.td_tuner.get()
-        )
 
     def execute(self):
         position = self.drivetrain.odometry.getEstimatedPosition()

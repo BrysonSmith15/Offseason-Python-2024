@@ -1,4 +1,3 @@
-from sys import last_value
 from commands2 import Subsystem
 from wpilib import DigitalInput, Encoder
 from wpimath.filter import SlewRateLimiter
@@ -26,7 +25,7 @@ class Elevator(Subsystem):
         self.rate_limiter = SlewRateLimiter(2)
 
         self.top_limit = DigitalInput(0)
-        self.bot_limit = DigitalInput(0)
+        self.bot_limit = DigitalInput(1)
 
         self.encoder = Encoder(8, 9)
 
@@ -38,17 +37,6 @@ class Elevator(Subsystem):
 
         self.encoder.setReverseDirection(True)
 
-        self.addChild("Left Motor 1", self.motor_l1)
-        self.addChild("Left Motor 2", self.motor_l2)
-        self.addChild("Right Motor 1", self.motor_r1)
-        self.addChild("Right Motor 2", self.motor_r2)
-        self.addChild("Top Limit Switch", self.top_limit)
-        self.addChild("Bottom Limit Switch", self.bot_limit)
-        self.addChild("Encocer", self.encoder)
-
-        self.stable_tick_getter = NTTunableInt(
-            "/Config/Elevator/StableTicksOffset", 0, persistent=True
-        )
         self.tick_offset = 0
 
     def top_pressed(self) -> bool:
@@ -76,5 +64,3 @@ class Elevator(Subsystem):
     def periodic(self) -> None:
         if self.bot_pressed():
             self.encoder.reset()
-        if self.tick_offset != self.stable_tick_getter.get():
-            self.tick_offset = self.stable_tick_getter.get()

@@ -8,8 +8,9 @@ from wpimath.kinematics import (
     SwerveDrive4Kinematics,
     ChassisSpeeds,
 )
+from wpilib import _wpilib
 from wpimath.estimator import SwerveDrive4PoseEstimator
-from wpimath.controller import HolonomicDriveController, PIDController
+from wpimath.controller import PIDController
 from wpimath.geometry import Translation2d, Rotation2d, Pose2d
 from wpimath.filter import SlewRateLimiter
 from wpiutil import *
@@ -17,7 +18,7 @@ from navx import AHRS
 import math
 from wpimath.units import feetToMeters
 
-import swerve_module
+from subsystems.swerve_module import SwerveModule
 
 # MPS
 maxVelocity = feetToMeters(15)
@@ -46,7 +47,6 @@ class Drivetrain(Subsystem):
 
     __ntTbl__ = NetworkTableInstance.getDefault().getTable("Drivetrain")
     fieldRelative: BooleanProperty = BooleanProperty("fieldRelative", True)
-    holonomic_PID: HolonomicDriveController = None
 
     def __init__(self):
         super().__init__()
@@ -54,14 +54,12 @@ class Drivetrain(Subsystem):
         self.setName("Drivetrain")
 
         self.robotName = "Robot"
-        self.gyro = AHRS(serial_port_id=SerialPort.USB1)
+        self.gyro = AHRS(_wpilib.SerialPort.Port.kUSB1)
 
-        self.fl = swerve_module.SwerveModule("fl", 14, 12, 13, True, True)
-        self.fr = swerve_module.SwerveModule("fr", 11, 9, 10, False, True)
-        self.bl = swerve_module.SwerveModule("bl", 17, 15, 16, True, True)
-        self.br = swerve_module.SwerveModule("br", 8, 6, 7, False, True)
-
-        self.addChild("Gryo", self.gyro)
+        self.fl = SwerveModule("fl", 14, 12, 13, True, True)
+        self.fr = SwerveModule("fr", 11, 9, 10, False, True)
+        self.bl = SwerveModule("bl", 17, 15, 16, True, True)
+        self.br = SwerveModule("br", 8, 6, 7, False, True)
 
         self.kinematics = SwerveDrive4Kinematics(
             self.fl.getModulePosition(),
@@ -82,23 +80,21 @@ class Drivetrain(Subsystem):
             Pose2d(Translation2d(), Rotation2d().fromDegrees(0)),
         )
 
-        xPID = PIDController(0.5, 0.0, 0.0)
-        xPID.setTolerance(0.05)
-        xPID.reset()
+        self.xPID = PIDController(0.5, 0.0, 0.0)
+        self.xPID.setTolerance(0.05)
+        self.xPID.reset()
 
-        yPID = PIDController(0.5, 0.0, 0.0)
-        yPID.setTolerance(0.05)
-        yPID.reset()
+        self.yPID = PIDController(0.5, 0.0, 0.0)
+        self.yPID.setTolerance(0.05)
+        self.yPID.reset()
 
-        tPID = PIDController(0.5, 0.0, 0.0)
-        tPID.setTolerance(0.05)
-        tPID.reset()
+        self.tPID = PIDController(0.5, 0.0, 0.0)
+        self.tPID.setTolerance(0.05)
+        self.tPID.reset()
 
-        tPID.enableContinuousInput(-math.pi, math.pi)
-        tPID.setTolerance(math.pi / 16)
-        tPID.reset(self.getRobotAngle().radians())
-
-        self.holonomic_PID = HolonomicDriveController(xPID, yPID, tPID)
+        self.tPID.enableContinuousInput(-math.pi, math.pi)
+        self.tPID.setTolerance(math.pi / 16)
+        self.tPID.reset()
 
         self.x_limiter = SlewRateLimiter(1)
         self.y_limiter = SlewRateLimiter(1)
@@ -137,9 +133,6 @@ class Drivetrain(Subsystem):
         self.runChassisSpeeds(ChassisSpeeds(0, 0, 0))
 
     ## gets
-    def get_holonomicPID(self) -> HolonomicDriveController:
-        return self.holonomic_PID
-
     def get_kinematics(self) -> SwerveDrive4Kinematics:
         return self.kinematics
 
@@ -168,15 +161,15 @@ class Drivetrain(Subsystem):
 
     def set_field_relative_command(self, new_val: bool) -> InstantCommand:
         cmd = InstantCommand(lambda: self.set_field_relative(new_val), self)
-        cmd.runsWhenDisabled = True
+        cmd.runsWhenDisabled = lambda: True
         return cmd
 
-    def reset_gyro(self, new_val: Rotation2d = Rotation2d(0)) -> None:
-        self.gyro.reset(new_val)
+    def reset_gyro(self) -> None:
+        self.gyro.reset()
 
     def reset_gyro_command(self, new_val: Rotation2d = Rotation2d(0)) -> InstantCommand:
         cmd = InstantCommand(lambda: self.reset_gyro(), self)
-        cmd.runsWhenDisabled = True
+        cmd.runsWhenDisabled = lambda: True
         return cmd
 
     def set_drive_idle(self, coast: bool):
@@ -187,10 +180,10 @@ class Drivetrain(Subsystem):
 
     def set_drive_idle_command(self, coast: bool):
         cmd = InstantCommand(lambda: self.set_drive_idle(coast), self)
-        cmd.runsWhenDisabled = True
+        cmd.runsWhenDisabled = lambda: True
         return cmd
 
-    def set_drive_idle(self, coast: bool):
+    def set_turn_idle(self, coast: bool):
         self.fl.set_turn_idle(coast)
         self.fr.set_turn_idle(coast)
         self.bl.set_turn_idle(coast)
@@ -198,7 +191,7 @@ class Drivetrain(Subsystem):
 
     def set_turn_idle_command(self, coast: bool):
         cmd = InstantCommand(lambda: self.set_turn_idle(coast), self)
-        cmd.runsWhenDisabled = True
+        cmd.runsWhenDisabled = lambda: True
         return cmd
 
     def set_max_speed(self, speed: float) -> None:
@@ -223,7 +216,7 @@ class Drivetrain(Subsystem):
         else:
             speeds = ChassisSpeeds(vx=vX, vy=vY, omega=vT)
 
-        self.holonomic_PID.getThetaController().reset(self.get_angle().radians(), vT)
+        self.tPID.reset()
 
         self.run_chassis_speeds(speeds)
 

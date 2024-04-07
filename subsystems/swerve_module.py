@@ -61,36 +61,35 @@ class SwerveModule(Subsystem):
         self.turn_motor = CANSparkMax(turn_id, CANSparkLowLevel.MotorType.kBrushless)
         self.drive_motor = CANSparkMax(drive_id, CANSparkLowLevel.MotorType.kBrushless)
 
-        self.cancoder.setPosition(self.encoder.getAbsolutePosition())
+        self.cancoder.set_position(self.cancoder.get_absolute_position().value)
 
         self.turn_encoder = self.turn_motor.getEncoder()
         self.turn_encoder.setPosition(
-            self.cancoder.getAbsolutePosition().GetValue() / 360.0
+            self.cancoder.get_absolute_position().value / 360.0
         )
         self.turn_encoder.setPositionConversionFactor(1 / 12.8)
         self.turn_encoder.setVelocityConversionFactor(1 / 12.8)
 
         self.turn_motor.setInverted(turn_inverted)
-        self.turn_motor.getPIDController().setFeedbackDevice(self.turn_encoder)
-        self.turn_motor.getPIDController().setP(turn_P)
-        self.turn_motor.getPIDController().setI(turn_I)
-        self.turn_motor.getPIDController().setD(turn_D)
+        self.turn_pid = self.turn_motor.getPIDController()
+        self.turn_pid.setFeedbackDevice(self.turn_encoder)
+        self.turn_pid.setP(turn_P)
+        self.turn_pid.setI(turn_I)
+        self.turn_pid.setD(turn_D)
 
+        self.drive_encoder = self.drive_motor.getEncoder()
         self.drive_encoder.setPosition(0)
         self.drive_encoder.setPositionConversionFactor(1 / 8.14)
         self.drive_encoder.setVelocityConversionFactor(1 / 8.14)
 
-        self.drive_motor.getPIDController().setP(drive_P)
-        self.drive_motor.getPIDController().setI(drive_I)
-        self.drive_motor.getPIDController().setD(drive_D)
-        self.drive_motor.getPIDController().setFeedbackDevice(self.drive_encoder)
+        self.drive_pid = self.drive_motor.getPIDController()
+        self.drive_pid.setP(drive_P)
+        self.drive_pid.setI(drive_I)
+        self.drive_pid.setD(drive_D)
+        self.drive_pid.setFeedbackDevice(self.drive_encoder)
         self.drive_motor.setInverted(drive_inverted)
 
         self.setName(f"SwerveModule/{subsystem_name}")
-        self.add_child("Drive", self.drive_motor)
-        self.add_child("Turn", self.turn_motor)
-        self.add_child("Drive Sensor", self.drive_encoder)
-        self.add_child("Turn Sensor", self.turn_encoder)
 
         self.module_state = SwerveModuleState(0, Rotation2d(0))
 

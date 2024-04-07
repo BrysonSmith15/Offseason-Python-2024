@@ -10,19 +10,18 @@ class Robot(TimedRobot):
     m_autonomousCommand: Command = None
     m_robotContainer: RobotContainer = None
 
-    __calibrate__ = True
-
     # Initialize Robot
     def robotInit(self):
         self.m_robotContainer = RobotContainer()
-        self.__calibrateCmd__ = self.m_robotContainer.getCalibrate()
+        wpilib.Watchdog(0.05, lambda: None).suppressTimeoutMessage(True)
 
     def robotPeriodic(self) -> None:
         CommandScheduler.getInstance().run()
+        self.m_robotContainer.interface.periodic()
 
     # Autonomous Robot Functions
     def autonomousInit(self):
-        self.m_autonomousCommand = self.m_robotContainer.getAutonomousCommand()
+        self.m_autonomousCommand = self.m_robotContainer.get_auto_command()
 
         if self.m_autonomousCommand != None:
             self.m_autonomousCommand.schedule()
@@ -35,7 +34,7 @@ class Robot(TimedRobot):
 
     # Teleop Robot Functions
     def teleopInit(self):
-        self.__calibrateCmd__.schedule()
+        pass
 
     def teleopPeriodic(self):
         pass
@@ -62,6 +61,10 @@ class Robot(TimedRobot):
 
     def disabledExit(self):
         pass
+
+    def SimulationPeriodic(self) -> None:
+        CommandScheduler.getInstance().run()
+        print("ASDFJAKSDFJSADLKFJASDLKFJAD")
 
 
 # Start the Robot when Executing Code

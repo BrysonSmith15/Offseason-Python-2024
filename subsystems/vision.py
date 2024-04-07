@@ -14,7 +14,6 @@ class Vision(Subsystem):
     ) -> None:
         super().__init__()
         self.setName("Vision")
-        self.subsystem("Vision")
         self.get_odometry = get_odometry
 
         self.fl = PhotonCamera("flCamera")
@@ -23,7 +22,7 @@ class Vision(Subsystem):
         self.br = PhotonCamera("brCamera")
 
         self.flEstimator = PhotonPoseEstimator(
-            AprilTagField(),
+            AprilTagField(AprilTagField.k2024Crescendo),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             self.fl,
             Transform3d(
@@ -34,7 +33,7 @@ class Vision(Subsystem):
             ),
         )
         self.frEstimator = PhotonPoseEstimator(
-            AprilTagField(),
+            AprilTagField(AprilTagField.k2024Crescendo),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             self.fr,
             Transform3d(
@@ -45,7 +44,7 @@ class Vision(Subsystem):
             ),
         )
         self.blEstimator = PhotonPoseEstimator(
-            AprilTagField(),
+            AprilTagField(AprilTagField.k2024Crescendo),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             self.bl,
             Transform3d(
@@ -56,7 +55,7 @@ class Vision(Subsystem):
             ),
         )
         self.brEstimator = PhotonPoseEstimator(
-            AprilTagField(),
+            AprilTagField(AprilTagField.k2024Crescendo),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             self.br,
             Transform3d(

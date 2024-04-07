@@ -34,8 +34,9 @@ class Drive_Joystick(Command):
         self.field_oriented = use_field_oriented
         self.holonomic = use_holonomic
 
-        self.hPID = self.drivetrain.get_holonomicPID()
-        self.tPID = self.hPID.getThetaController()
+        self.xPID = self.drivetrain.xPID
+        self.yPID = self.drivetrain.yPID
+        self.tPID = self.drivetrain.tPID
 
     def initialize(self) -> None:
         self.tPID.reset(self.drivetrain.get_angle().radians())

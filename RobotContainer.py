@@ -31,7 +31,7 @@ class RobotContainer:
         self.elevator = Elevator()
         self.shooter = Shooter()
         self.intake = Intake()
-        self.vision = Vision(self.drivetrain.get_odometry)
+        # self.vision = Vision(self.drivetrain.get_odometry)
         self.leds = LEDs(9, 80)
 
         self.configure_bindings()
@@ -56,6 +56,9 @@ class RobotContainer:
                 self.interface.get_drive_field_oriented,
                 self.interface.get_drive_holonomic,
             )
+        )
+        self.leds.setDefaultCommand(
+            LED_Chase(self.leds, (255, 255, 255), (255, 50, 0), 40)
         )
 
     def configure_bindings(self) -> None:
@@ -94,7 +97,7 @@ class RobotContainer:
             self.drivetrain.set_drive_idle_command(False)
         ).onTrue(self.drivetrain.set_turn_idle_command(False)).onTrue(
             LED_Chase(
-                self.led,
+                self.leds,
                 (255, 255, 255),
                 (
                     (

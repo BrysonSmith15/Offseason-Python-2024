@@ -11,20 +11,15 @@ class Shooter(Subsystem):
         self.name = "Shooter"
 
         self.motor_l1 = CANSparkMax(21, CANSparkLowLevel.MotorType.kBrushed)
-        self.motor_l2 = CANSparkMax(21, CANSparkLowLevel.MotorType.kBrushed)
+        # self.motor_l2 = CANSparkMax(21, CANSparkLowLevel.MotorType.kBrushed)
         self.motor_r1 = CANSparkMax(30, CANSparkLowLevel.MotorType.kBrushed)
-        self.motor_r2 = CANSparkMax(21, CANSparkLowLevel.MotorType.kBrushed)
+        # self.motor_r2 = CANSparkMax(21, CANSparkLowLevel.MotorType.kBrushed)
 
         self.rate_limiter = SlewRateLimiter(4)
 
-        self.addChild("L1", self.motor_l1)
-        self.addChild("L2", self.motor_l2)
-        self.addChild("R1", self.motor_r1)
-        self.addChild("R2", self.motor_r2)
-
-        self.motor_l2.follow(self.motor_l1, False)
+        # self.motor_l2.follow(self.motor_l1, False)
         self.motor_r1.follow(self.motor_l1, True)
-        self.motor_r2.follow(self.motor_l1, True)
+        # self.motor_r2.follow(self.motor_l1, True)
 
     def set_motors(self, power: float) -> None:
         power = 1 if power > 1 else -1 if power < -1 else power

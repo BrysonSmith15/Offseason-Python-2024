@@ -1,4 +1,4 @@
-from commands2 import Subsystem
+from commands2 import Command, Subsystem
 from wpilib import AddressableLED
 
 
@@ -16,5 +16,5 @@ class LEDs(Subsystem):
         for i in range(start, end):
             self.data[i].setRGB(r, g, b)
 
-    def set_command(self, r: int, g: int, b: int):
+    def set_command(self, r: int, g: int, b: int) -> Command:
         return self.runOnce(self.set(0, self.strip_len, r, g, b))

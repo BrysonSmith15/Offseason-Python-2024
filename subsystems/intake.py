@@ -12,7 +12,6 @@ class Intake(Subsystem):
         self.limiter = SlewRateLimiter(1 / 2)
 
         self.setName("Intake")
-        self.addChild("Motor", self.motor)
 
     def set_motor(self, power: float) -> None:
         power = 1 if power > 1 else -1 if power < -1 else power
