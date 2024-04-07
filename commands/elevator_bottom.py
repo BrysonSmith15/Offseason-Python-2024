@@ -10,9 +10,6 @@ class Elevator_Bottom(Command):
         self.addRequirements(elevator)
         self.elevator = elevator
 
-    def initialize(self) -> None:
-        pass
-
     def execute(self) -> None:
         if self.elevator.get_ticks() < elevator_constants.stable_ticks:
             self.elevator.set_motors(elevator_constants.speed)

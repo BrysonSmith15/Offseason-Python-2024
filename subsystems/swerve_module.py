@@ -13,7 +13,7 @@ Angle Controller: Closed Loop (WPILib)
 
 import math
 
-from commands2 import SubsystemBase
+from commands2 import Subsystem
 from phoenix6.hardware import CANcoder
 from rev import CANSparkMax, CANSparkLowLevel, SparkRelativeEncoder
 from wpilib import RobotBase, RobotState
@@ -37,7 +37,7 @@ turn_I = 0.0
 turn_D = 0.0
 
 
-class SwerveModule(SubsystemBase):
+class SwerveModule(Subsystem):
     drive_motor: CANSparkMax = None
     turn_motor: CANSparkMax = None
     cancoder: CANcoder = None
@@ -86,7 +86,6 @@ class SwerveModule(SubsystemBase):
         self.drive_motor.getPIDController().setFeedbackDevice(self.drive_encoder)
         self.drive_motor.setInverted(drive_inverted)
 
-        self.setSubsytem(f"SwerveModule/{subsystem_name}")
         self.setName(f"SwerveModule/{subsystem_name}")
         self.add_child("Drive", self.drive_motor)
         self.add_child("Turn", self.turn_motor)

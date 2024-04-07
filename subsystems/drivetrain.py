@@ -155,6 +155,14 @@ class Drivetrain(Subsystem):
     def get_field_relative(self):
         return self.fieldRelative
 
+    def get_module_positions(self):
+        return (
+            self.fl.getPosition(),
+            self.fr.getPosition(),
+            self.bl.getPosition(),
+            self.br.getPosition(),
+        )
+
     def set_field_relative(self, new_val: bool):
         self.fieldRelative.set(new_val)
 

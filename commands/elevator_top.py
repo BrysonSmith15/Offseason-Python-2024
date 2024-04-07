@@ -10,9 +10,6 @@ class Elevator_Top(Command):
         self.addRequirements(elevator)
         self.elevator = elevator
 
-    def initialize(self) -> None:
-        pass
-
     def execute(self) -> None:
         if (
             self.elevator.get_ticks()
