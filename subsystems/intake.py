@@ -13,6 +13,10 @@ class Intake(Subsystem):
 
         self.setName("Intake")
 
+        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 500)
+        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 500)
+        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 500)
+
     def set_motor(self, power: float) -> None:
         power = 1 if power > 1 else -1 if power < -1 else power
         self.motor.set(self.limiter.calculate(power))

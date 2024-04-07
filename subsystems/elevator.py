@@ -12,6 +12,7 @@ from utils import *
 class Elevator(Subsystem):
     def __init__(self):
         self.setName("Elevator")
+        self.network_table = NetworkTableInstance.getDefault().getTable("Elevator")
 
         self.motor_l1 = CANSparkMax(26, CANSparkLowLevel.MotorType.kBrushed)
         self.motor_l2 = CANSparkMax(27, CANSparkLowLevel.MotorType.kBrushed)
@@ -64,3 +65,4 @@ class Elevator(Subsystem):
     def periodic(self) -> None:
         if self.bot_pressed():
             self.encoder.reset()
+        self.network_table.putNumber("Encoder Ticks", self.encoder.get_ticks())

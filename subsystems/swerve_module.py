@@ -14,6 +14,7 @@ Angle Controller: Closed Loop (WPILib)
 import math
 
 from commands2 import Subsystem
+from ntcore import NetworkTableInstance, NetworkTable
 from phoenix6.hardware import CANcoder
 from rev import CANSparkMax, CANSparkLowLevel, SparkRelativeEncoder
 from wpilib import RobotBase, RobotState
@@ -45,6 +46,7 @@ class SwerveModule(Subsystem):
     turn_encoder: SparkRelativeEncoder = None
     module_position: Translation2d = None
     module_state: SwerveModuleState = None
+    network_table: NetworkTable = None
 
     def __init__(
         self,
@@ -56,6 +58,9 @@ class SwerveModule(Subsystem):
         drive_inverted: bool,
     ):
         self.name = subsystem_name
+        self.network_table = NetworkTableInstance.getDefault().getTable(
+            f"Swervemodule/{self.name}"
+        )
 
         self.cancoder = CANcoder(encoder_id)
         self.turn_motor = CANSparkMax(turn_id, CANSparkLowLevel.MotorType.kBrushless)
@@ -94,7 +99,56 @@ class SwerveModule(Subsystem):
         self.module_state = SwerveModuleState(0, Rotation2d(0))
 
     def periodic(self) -> None:
-        pass
+        self.network_table.putNumber(
+            "CANCoder Turn Rotations", self.cancoder.get_absolute_position().value
+        )
+        self.network_table.putNumber(
+            "Turn Motor Rotations", self.turn_encoder.getPosition()
+        )
+        self.network_table.putNumber(
+            "Turn Motor Angle", self.getPosition().angle.degrees
+        )
+        self.network_table.putNumber(
+            "Drive Rotations", self.drive_encoder.getPosition()
+        )
+        self.network_table.putNumber(
+            "Drive Distance (ft)", self.getPosition().distance_ft
+        )
+        if (
+            self.network_table.getNumber("Drive P", self.drive_pid.getP())
+            != self.drive_pid.getP()
+        ):
+            self.drive_pid.setP(self.network_table.getNumber("Drive P"), 6e-5)
+
+        if (
+            self.network_table.getNumber("Drive I", self.drive_pid.getI())
+            != self.drive_pid.getI()
+        ):
+            self.drive_pid.setI(self.network_table.getNumber("Drive I"), 0)
+
+        if (
+            self.network_table.getNumber("Drive D", self.drive_pid.getD())
+            != self.drive_pid.getD()
+        ):
+            self.drive_pid.setD(self.network_table.getNumber("Drive D"), 0)
+
+        if (
+            self.network_table.getNumber("Turn P", self.turn_pid.getP())
+            != self.turn_pid.getP()
+        ):
+            self.turn_pid.setP(self.network_table.getNumber("Turn P"), 6e-5)
+
+        if (
+            self.network_table.getNumber("Turn I", self.turn_pid.getI())
+            != self.turn_pid.getI()
+        ):
+            self.turn_pid.setI(self.network_table.getNumber("Turn I"), 0)
+
+        if (
+            self.network_table.getNumber("Turn D", self.turn_pid.getD())
+            != self.turn_pid.getD()
+        ):
+            self.turn_pid.setD(self.network_table.getNumber("Turn D"), 0)
 
     def setDesiredState(self, desiredState: SwerveModuleState):
         currAnglePos = self.turn_encoder.getPosition()
