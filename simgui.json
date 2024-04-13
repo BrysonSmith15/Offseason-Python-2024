@@ -3,9 +3,6 @@
     "Addressable LEDs": {
       "0": {
         "columns": 2
-      },
-      "window": {
-        "visible": true
       }
     },
     "Other Devices": {
@@ -13,6 +10,16 @@
         "header": {
           "open": true
         }
+      },
+      "navX-Sensor[2]": {
+        "header": {
+          "open": true
+        }
+      }
+    },
+    "Timing": {
+      "window": {
+        "visible": false
       }
     }
   },
@@ -21,23 +28,67 @@
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Auto Mode": "String Chooser",
       "/SmartDashboard/Field": "Field2d"
+    },
+    "windows": {
+      "/SmartDashboard/Field": {
+        "Robot": {
+          "length": 0.796999990940094,
+          "width": 0.796999990940094
+        },
+        "bottom": 1476,
+        "height": 8.210550308227539,
+        "left": 150,
+        "right": 2961,
+        "top": 79,
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables": {
+    "Retained Values": {
+      "open": false
+    },
     "transitory": {
       "Drivetrain": {
+        "DriveJoystick": {
+          "open": true
+        },
         "open": true
       },
-      "FMSInfo": {
-        "open": true
+      "LiveWindow": {
+        ".status": {
+          "open": true
+        }
+      },
+      "Shuffleboard": {
+        ".metadata": {
+          "open": true
+        }
       },
       "SmartDashboard": {
         "Auto Mode": {
+          "open": true,
           "string[]##v_/SmartDashboard/Auto Mode/options": {
             "open": true
           }
         },
         "Field": {
+          "double[]##v_/SmartDashboard/Field/Robot": {
+            "open": true
+          }
+        },
+        "double[]##v_/SmartDashboard/Field\\Robot": {
+          "open": true
+        }
+      },
+      "Swervemodule": {
+        "bl": {
+          "open": true
+        },
+        "br": {
           "open": true
         },
         "open": true
@@ -45,6 +96,15 @@
     }
   },
   "NetworkTables Info": {
+    "Connections": {
+      "open": true
+    },
+    "Server": {
+      "Publishers": {
+        "open": true
+      },
+      "open": true
+    },
     "visible": true
   }
 }

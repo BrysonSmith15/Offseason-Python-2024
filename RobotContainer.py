@@ -1,27 +1,21 @@
-import math
-from wpilib import DriverStation, SendableChooser, SmartDashboard, Joystick
 from commands2.button import Trigger
-import wpilib
-from wpimath.units import feetToMeters
+from wpilib import DriverStation, SendableChooser, SmartDashboard
 from wpimath.geometry import Rotation2d
+from wpimath.units import feetToMeters
 
-# import commands2.cmd
-
+from commands.autos import *
 from commands.drive_joystick import Drive_Joystick
 from commands.elevator_bottom import Elevator_Bottom
-from commands.elevator_top import Elevator_Top
-from commands.intake_run import Intake_Run
 from commands.led_chase import LED_Chase
-from commands.shoot import Shoot
-from commands.autos import *
-
 from subsystems.drivetrain import Drivetrain
-from subsystems.interface import Interface
 from subsystems.elevator import Elevator
+from subsystems.intake import Intake
+from subsystems.interface import Interface
 from subsystems.leds import LEDs
 from subsystems.shooter import Shooter
-from subsystems.vision import Vision
-from subsystems.intake import Intake
+
+
+# import commands2.cmd
 
 
 class RobotContainer:
@@ -35,15 +29,17 @@ class RobotContainer:
         self.leds = LEDs(9, 80)
 
         self.configure_bindings()
+        self.set_default_commands()
 
-        self.auto_chooser = wpilib.SendableChooser()
+        self.auto_chooser = SendableChooser()
         self.auto_chooser.addOption("Shoot Only", Shoot_Only)
         self.auto_chooser.addOption("Shoot and Drive Left", (Shoot_And_Drive, -1))
         self.auto_chooser.addOption("Shoot and Drive Center", (Shoot_And_Drive, 0))
         self.auto_chooser.addOption("Shoot and Drive Right", (Shoot_And_Drive, 1))
-        self.auto_chooser.setDefaultOption("None", Nothing)
+        # self.auto_chooser.setDefaultOption("None", Nothing)
+        self.auto_chooser.setDefaultOption("I'm so cool", (Shoot_And_Drive, 0))
 
-        wpilib.SmartDashboard.putData("Auto Mode", self.auto_chooser)
+        SmartDashboard.putData("Auto Mode", self.auto_chooser)
 
     def set_default_commands(self) -> None:
         self.drivetrain.setDefaultCommand(
@@ -53,8 +49,8 @@ class RobotContainer:
                 self.interface.get_drive_side,
                 self.interface.get_drive_holonomic_forward,
                 self.interface.get_drive_turn,
-                self.interface.get_drive_field_oriented,
-                self.interface.get_drive_holonomic,
+                self.interface.get_drive_field_oriented().getAsBoolean,
+                self.interface.get_drive_holonomic().getAsBoolean,
             )
         )
         self.leds.setDefaultCommand(

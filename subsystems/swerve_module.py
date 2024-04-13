@@ -1,5 +1,5 @@
 """
-Description: Swerve Module (Swerve Drive Specialites mk4)
+Description: Swerve Module (Swerve Drive Specialties mk4)
 Version: 1
 Date: 3/21/24
 
@@ -17,13 +17,11 @@ from commands2 import Subsystem
 from ntcore import NetworkTableInstance, NetworkTable
 from phoenix6.hardware import CANcoder
 from rev import CANSparkMax, CANSparkLowLevel, SparkRelativeEncoder
-from wpilib import RobotBase, RobotState
+from wpimath import inputModulus
 from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
 from wpimath.geometry import Translation2d, Rotation2d
 from wpimath.units import inchesToMeters
-from wpiutil import *
 
-from utils import *
 
 # consts
 
@@ -57,6 +55,7 @@ class SwerveModule(Subsystem):
         turn_inverted: bool,
         drive_inverted: bool,
     ):
+        super().__init__()
         self.name = subsystem_name
         self.network_table = NetworkTableInstance.getDefault().getTable(
             f"Swervemodule/{self.name}"
@@ -106,7 +105,7 @@ class SwerveModule(Subsystem):
             "Turn Motor Rotations", self.turn_encoder.getPosition()
         )
         self.network_table.putNumber(
-            "Turn Motor Angle", self.getPosition().angle.degrees
+            "Turn Motor Angle", self.getPosition().angle.degrees()
         )
         self.network_table.putNumber(
             "Drive Rotations", self.drive_encoder.getPosition()
@@ -114,41 +113,43 @@ class SwerveModule(Subsystem):
         self.network_table.putNumber(
             "Drive Distance (ft)", self.getPosition().distance_ft
         )
+        self.network_table.putNumber("Setpoint Angle (deg)", self.module_state.angle.degrees())
+        self.network_table.putNumber("Setpoint Speed (fps)", self.module_state.speed_fps)
         if (
             self.network_table.getNumber("Drive P", self.drive_pid.getP())
             != self.drive_pid.getP()
         ):
-            self.drive_pid.setP(self.network_table.getNumber("Drive P"), 6e-5)
+            self.drive_pid.setP(self.network_table.getNumber("Drive P", 6e-5))
 
         if (
             self.network_table.getNumber("Drive I", self.drive_pid.getI())
             != self.drive_pid.getI()
         ):
-            self.drive_pid.setI(self.network_table.getNumber("Drive I"), 0)
+            self.drive_pid.setI(self.network_table.getNumber("Drive I", 6e-5))
 
         if (
             self.network_table.getNumber("Drive D", self.drive_pid.getD())
             != self.drive_pid.getD()
         ):
-            self.drive_pid.setD(self.network_table.getNumber("Drive D"), 0)
+            self.drive_pid.setD(self.network_table.getNumber("Drive D", 6e-5))
 
         if (
             self.network_table.getNumber("Turn P", self.turn_pid.getP())
             != self.turn_pid.getP()
         ):
-            self.turn_pid.setP(self.network_table.getNumber("Turn P"), 6e-5)
+            self.turn_pid.setP(self.network_table.getNumber("Turn P", 6e-5))
 
         if (
             self.network_table.getNumber("Turn I", self.turn_pid.getI())
             != self.turn_pid.getI()
         ):
-            self.turn_pid.setI(self.network_table.getNumber("Turn I"), 0)
+            self.turn_pid.setI(self.network_table.getNumber("Turn I", 6e-5))
 
         if (
             self.network_table.getNumber("Turn D", self.turn_pid.getD())
             != self.turn_pid.getD()
         ):
-            self.turn_pid.setD(self.network_table.getNumber("Turn D"), 0)
+            self.turn_pid.setD(self.network_table.getNumber("Turn D", 6e-5), 0)
 
     def setDesiredState(self, desiredState: SwerveModuleState):
         currAnglePos = self.turn_encoder.getPosition()
@@ -159,10 +160,8 @@ class SwerveModule(Subsystem):
         self.module_state = optimalState
 
         velocity = optimalState.speed
-        self.drive_motor.setReference(velocity, CANSparkLowLevel.ControlType.kVelocity)
-        self.turn_motor.setReference(
-            optimalState.angle.degrees / 180, CANSparkLowLevel.ControlType.kPosition
-        )
+        self.drive_pid.setReference(velocity, CANSparkLowLevel.ControlType.kVelocity)
+        self.turn_pid.setReference(inputModulus(optimalState.angle.degrees(), 0, 360) / 360, CANSparkLowLevel.ControlType.kPosition)
 
     def getModulePosition(self) -> Translation2d:
         is_front = self.name[0] == "f"

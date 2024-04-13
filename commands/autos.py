@@ -1,19 +1,18 @@
-from commands2 import SequentialCommandGroup, WaitCommand
 import commands2
+from commands2 import SequentialCommandGroup, WaitCommand
 from wpimath.geometry import Pose2d
 
 from commands.drive_position import Drive_Position
-from commands.elevator_bottom import Elevator_Bottom
 from commands.elevator_top import Elevator_Top
 from commands.intake_run import Intake_Run
 from commands.shoot import Shoot
-
 from subsystems.drivetrain import Drivetrain
 from subsystems.elevator import Elevator
-from subsystems.shooter import Shooter
 from subsystems.intake import Intake
+from subsystems.shooter import Shooter
 
-from commands import *
+
+# TODO: Make it really good, like this one: https://www.youtube.com/watch?v=dompT_VuHxs
 
 
 def Shoot_Only(
@@ -29,7 +28,9 @@ def Shoot_Only(
         .withTimeout(2)
         .andThen(Intake_Run(intake, -0.25))
         .withTimeout(1)
-        .andThen(Shoot(shooter).alongWith(WaitCommand(2).andThen(Intake_Run(1.0))))
+        .andThen(
+            Shoot(shooter).alongWith(WaitCommand(2).andThen(Intake_Run(intake, 1.0)))
+        )
     )
 
 

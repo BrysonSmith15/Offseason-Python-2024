@@ -1,7 +1,5 @@
-# TODO: insert robot code here
-
-from wpilib import TimedRobot, run
 from commands2 import Command, CommandScheduler
+from wpilib import TimedRobot, Watchdog, run
 
 from RobotContainer import *
 
@@ -13,17 +11,17 @@ class Robot(TimedRobot):
     # Initialize Robot
     def robotInit(self):
         self.m_robotContainer = RobotContainer()
-        wpilib.Watchdog(0.05, lambda: None).suppressTimeoutMessage(True)
+        Watchdog(0.05, lambda: None).suppressTimeoutMessage(True)
 
     def robotPeriodic(self) -> None:
         CommandScheduler.getInstance().run()
-        self.m_robotContainer.interface.periodic()
+        # self.m_robotContainer.interface.periodic()
 
     # Autonomous Robot Functions
     def autonomousInit(self):
         self.m_autonomousCommand = self.m_robotContainer.get_auto_command()
 
-        if self.m_autonomousCommand != None:
+        if self.m_autonomousCommand is not None:
             self.m_autonomousCommand.schedule()
 
     def autonomousPeriodic(self):
@@ -64,7 +62,6 @@ class Robot(TimedRobot):
 
     def SimulationPeriodic(self) -> None:
         CommandScheduler.getInstance().run()
-        print("ASDFJAKSDFJSADLKFJASDLKFJAD")
 
 
 # Start the Robot when Executing Code

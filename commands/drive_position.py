@@ -1,28 +1,38 @@
 from commands2 import Command
-from wpimath.controller import PIDController
-from wpimath.geometry import Pose2d, Rotation2d
-from wpimath.units import inchesToMeters
+from ntcore import NetworkTableInstance
+from wpimath.geometry import Pose2d
+
 from subsystems.drivetrain import Drivetrain
 
 
 class Drive_Position(Command):
     def __init__(self, drivetrain: Drivetrain, desired_position: Pose2d):
         super().__init__()
+        self.net_table = NetworkTableInstance.getDefault().getTable("Drive_Position")
         self.drivetrain = drivetrain
         self.addRequirements(drivetrain)
         self.desired = desired_position
 
-        self.x_pid = PIDController(6e-5, 0, 0)
-        self.y_pid = PIDController(6e-5, 0, 0)
-        self.t_pid = PIDController(6e-5, 0, 0)
-
-        self.t_pid.enableContinuousInput(-180, 180)
-
-        self.x_pid.setTolerance(inchesToMeters(3))
-        self.y_pid.setTolerance(inchesToMeters(3))
-        self.t_pid.setTolerance(7.5)
+        self.x_pid = self.drivetrain.x_pid
+        self.y_pid = self.drivetrain.y_pid
+        self.t_pid = self.drivetrain.t_pid
 
     def initialize(self):
+        self.x_pid.setPID(
+            self.net_table.getNumber("x_kp", self.x_pid.getP()),
+            self.net_table.getNumber("x_ki", self.x_pid.getI()),
+            self.net_table.getNumber("x_kd", self.x_pid.getD()),
+        )
+        self.y_pid.setPID(
+            self.net_table.getNumber("y_kp", self.y_pid.getP()),
+            self.net_table.getNumber("y_ki", self.y_pid.getI()),
+            self.net_table.getNumber("y_kd", self.y_pid.getD()),
+        )
+        self.x_pid.setPID(
+            self.net_table.getNumber("theta_kp", self.t_pid.getP()),
+            self.net_table.getNumber("theta_ki", self.t_pid.getI()),
+            self.net_table.getNumber("theta_kd", self.t_pid.getD()),
+        )
         self.x_pid.reset()
         self.y_pid.reset()
         self.t_pid.reset()

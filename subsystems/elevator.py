@@ -11,6 +11,7 @@ from utils import *
 
 class Elevator(Subsystem):
     def __init__(self):
+        super().__init__()
         self.setName("Elevator")
         self.network_table = NetworkTableInstance.getDefault().getTable("Elevator")
 
@@ -65,4 +66,4 @@ class Elevator(Subsystem):
     def periodic(self) -> None:
         if self.bot_pressed():
             self.encoder.reset()
-        self.network_table.putNumber("Encoder Ticks", self.encoder.get_ticks())
+        self.network_table.putNumber("Encoder Ticks", self.get_ticks())

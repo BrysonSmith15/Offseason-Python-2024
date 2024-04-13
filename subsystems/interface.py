@@ -1,10 +1,5 @@
-from inspect import iscode
-from threading import Thread
-import commands2.button
+from commands2.button import CommandJoystick, Trigger
 from wpimath import applyDeadband
-from commands2.button import Trigger
-from commands2.button import CommandGenericHID
-from commands2.button import CommandJoystick
 
 
 class Interface:
@@ -67,7 +62,7 @@ class Interface:
     def get_drive_forward(self) -> float:
         return (
             applyDeadband(
-                self.driver_controller.getRawAxis(self.lx_axis), self.deadband
+                -self.driver_controller.getRawAxis(self.ly_axis), self.deadband
             )
             if self.driver_controller
             else 0.0
@@ -76,7 +71,7 @@ class Interface:
     def get_drive_side(self) -> float:
         return (
             applyDeadband(
-                self.driver_controller.getRawAxis(self.ly_axis), self.deadband
+                -self.driver_controller.getRawAxis(self.lx_axis), self.deadband
             )
             if self.driver_controller
             else 0.0
@@ -109,7 +104,7 @@ class Interface:
 
     def get_drive_holonomic(self) -> Trigger:
         return (
-            Trigger(lambda: self.driver_controller.getRawAxis(self.rt_axis) < 0.25)
+            Trigger(lambda: self.driver_controller.getRawAxis(self.lt_axis) > 0.25)
             if self.driver_controller
             else Trigger(lambda: False)
         )
