@@ -6,53 +6,18 @@ from navx import AHRS
 from ntcore import NetworkTableInstance
 from wpilib import DriverStation, Field2d, RobotBase, SmartDashboard, Timer
 from wpilib._wpilib import SerialPort
-from wpimath.controller import PIDController
+from wpimath.controller import ProfiledPIDController
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.filter import SlewRateLimiter
 from wpimath.geometry import Pose2d, Rotation2d, Translation2d
 from wpimath.kinematics import ChassisSpeeds, SwerveDrive4Kinematics
-from wpimath.units import feetToMeters, inchesToMeters
+from wpimath.trajectory import TrapezoidProfile
+from wpimath.units import degreesToRadians, feetToMeters, inchesToMeters
 
 from subsystems.swerve_module import SwerveModule
 
 
 class Drivetrain(Subsystem):
-    class BooleanProperty:
-        """
-        Represents a boolean value which can be changed over network tables
-        """
-
-        _name: str = ""
-        _value: bool = False
-
-        def __init__(self, name: str, value: bool = False):
-            """
-            name: str => The name of the boolean property
-            value: bool (False) => The default value of the property
-            """
-            self._name = name
-            self.set(value)
-
-        def set(self, value: bool) -> None:
-            """
-            set the value of the property
-            value: bool => Sets the value
-            """
-            self._value = value
-            SmartDashboard.putBoolean(self._name, self._value)
-
-        def get(self) -> bool:
-            """
-            return: bool => currently stored value
-            """
-            return self._value
-
-        def toggle(self) -> None:
-            """
-            change own value True<->False
-            """
-            self.set(not self._value)
-
     __ntTbl__ = NetworkTableInstance.getDefault().getTable("Drivetrain")
 
     def __init__(self):
@@ -61,9 +26,9 @@ class Drivetrain(Subsystem):
         # MPS
         self.maxVelocity = feetToMeters(15)
         # RAD / S
-        self.maxAngularVelocity = math.pi
+        self.maxAngularVelocity = 2 * math.pi
         # accel time (seconds)
-        self.time_to_max_velocity = 2
+        self.time_to_max_velocity = 1
 
         self.setName("Drivetrain")
         self.chassis_speeds = ChassisSpeeds(0, 0, 0)
@@ -74,8 +39,8 @@ class Drivetrain(Subsystem):
 
         self.fl = SwerveModule("fl", 14, 12, 13, True, True)
         self.fr = SwerveModule("fr", 11, 9, 10, False, True)
-        self.bl = SwerveModule("bl", 17, 15, 16, True, True)
-        self.br = SwerveModule("br", 8, 6, 7, False, True)
+        self.bl = SwerveModule("bl", 17, 15, 16, True, False)
+        self.br = SwerveModule("br", 8, 6, 7, False, False)
 
         self.kinematics = SwerveDrive4Kinematics(
             self.fl.getModulePosition(),
@@ -104,14 +69,36 @@ class Drivetrain(Subsystem):
             -4 * self.maxAngularVelocity / self.time_to_max_velocity,
         )
 
-        self.x_pid = PIDController(6e-5, 0, 3e-5)
-        self.y_pid = PIDController(6e-5, 0, 3e-5)
-        self.t_pid = PIDController(6e-3, 0, 3e-3)
+        self.x_pid = ProfiledPIDController(
+            3e-1,
+            0,
+            1e-7,
+            TrapezoidProfile.Constraints(
+                self.maxVelocity, self.maxVelocity / self.time_to_max_velocity
+            ),
+        )
+        self.y_pid = ProfiledPIDController(
+            3e-1,
+            0,
+            1e-7,
+            TrapezoidProfile.Constraints(
+                self.maxVelocity, 2 * self.maxVelocity / self.time_to_max_velocity
+            ),
+        )
+        self.t_pid = ProfiledPIDController(
+            5e-1,
+            0,
+            1e-2,
+            TrapezoidProfile.Constraints(
+                self.maxAngularVelocity,
+                self.maxAngularVelocity / self.time_to_max_velocity,
+            ),
+        )
 
-        self.t_pid.enableContinuousInput(-math.pi, math.pi)
         self.x_pid.setTolerance(inchesToMeters(3))
         self.y_pid.setTolerance(inchesToMeters(3))
-        self.t_pid.setTolerance(7.5)
+        self.t_pid.setTolerance(degreesToRadians(3))
+        self.t_pid.enableContinuousInput(-math.pi, math.pi)
 
         SmartDashboard.putData("Field", Field2d())
 
@@ -126,6 +113,7 @@ class Drivetrain(Subsystem):
                 self.br.getPosition(),
             ),
         )
+        self.__ntTbl__.putString("Running Command", str(self.getCurrentCommand()))
         if not self.is_real:
             self.odometry.resetPosition(
                 self.get_angle(),
@@ -152,7 +140,7 @@ class Drivetrain(Subsystem):
                 "ChassisSpeeds vy (fps)", self.chassis_speeds.vy_fps
             )
             self.__ntTbl__.putNumber(
-                "ChassisSpeeds omega (dps)", self.chassis_speeds.omega_dps
+                "ChassisSpeeds omega (rad/s)", self.chassis_speeds.omega
             )
 
         poseX = round(pose.X(), 3)
@@ -186,7 +174,7 @@ class Drivetrain(Subsystem):
 
         SmartDashboard.putNumberArray(f"Field/{self.robotName}", [poseX, poseY, poseT])
 
-    def stop(self):
+    def stop(self) -> None:
         self.run_chassis_speeds(ChassisSpeeds(0, 0, 0))
 
     # gets
@@ -275,9 +263,6 @@ class Drivetrain(Subsystem):
         speeds: ChassisSpeeds,
         center_of_rotation: Translation2d = Translation2d(0, 0),
     ) -> None:
-        self.chassis_speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-            speeds, self.get_angle()
-        )
         self.chassis_speeds = speeds
         states = self.kinematics.toSwerveModuleStates(
             self.chassis_speeds, center_of_rotation

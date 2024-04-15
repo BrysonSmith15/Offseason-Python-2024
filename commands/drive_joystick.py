@@ -43,7 +43,9 @@ class Drive_Joystick(Command):
         self.tPID = self.drivetrain.t_pid
 
     def initialize(self) -> None:
-        self.tPID.reset()
+        self.tPID.reset(
+            measuredPosition=self.drivetrain.get_pose().rotation().radians()
+        )
 
     def execute(self) -> None:
         x = applyDeadband(self.vx(), deadband)

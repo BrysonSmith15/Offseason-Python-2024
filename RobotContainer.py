@@ -1,7 +1,5 @@
 from commands2.button import Trigger
 from wpilib import DriverStation, SendableChooser, SmartDashboard
-from wpimath.geometry import Rotation2d
-from wpimath.units import feetToMeters
 
 from commands.autos import *
 from commands.drive_joystick import Drive_Joystick
@@ -36,8 +34,7 @@ class RobotContainer:
         self.auto_chooser.addOption("Shoot and Drive Left", (Shoot_And_Drive, -1))
         self.auto_chooser.addOption("Shoot and Drive Center", (Shoot_And_Drive, 0))
         self.auto_chooser.addOption("Shoot and Drive Right", (Shoot_And_Drive, 1))
-        # self.auto_chooser.setDefaultOption("None", Nothing)
-        self.auto_chooser.setDefaultOption("I'm so cool", (Shoot_And_Drive, 0))
+        self.auto_chooser.setDefaultOption("None", Nothing)
 
         SmartDashboard.putData("Auto Mode", self.auto_chooser)
 
@@ -53,11 +50,41 @@ class RobotContainer:
                 self.interface.get_drive_holonomic().getAsBoolean,
             )
         )
-        self.leds.setDefaultCommand(
-            LED_Chase(self.leds, (255, 255, 255), (255, 50, 0), 40)
-        )
+        # self.leds.setDefaultCommand(
+        #     LED_Chase(self.leds, (255, 255, 255), (255, 50, 0), 40)
+        # )
 
     def configure_bindings(self) -> None:
+        self.interface.tmp_get_drive_top_left().onTrue(
+            Drive_Position(
+                self.drivetrain, Pose2d(1, 1, Rotation2d.fromDegrees(90))
+            ).andThen(
+                Drive_Position(
+                    self.drivetrain,
+                    Pose2d(
+                        feetToMeters(15), feetToMeters(15), Rotation2d.fromDegrees(180)
+                    ),
+                )
+            )
+        )
+
+        self.interface.driver_controller.button(self.interface.b_button).onTrue(
+            SequentialCommandGroup(
+                Drive_Position(
+                    self.drivetrain, Pose2d(0, 0, Rotation2d.fromDegrees(0))
+                ),
+                WaitCommand(0.1),
+                Drive_Position(
+                    self.drivetrain,
+                    Pose2d(
+                        feetToMeters(27),
+                        feetToMeters(13.5),
+                        Rotation2d.fromDegrees(180),
+                    ),
+                ),
+            )
+        )
+
         # go really fast to fight and play defense
         self.interface.get_drive_defense_mode().onTrue(
             self.drivetrain.set_max_speed_command(feetToMeters(100.0))
@@ -116,7 +143,8 @@ class RobotContainer:
             self.drivetrain.set_turn_idle_command(True)
         )
 
-    def get_auto_command(self):
+    def get_auto_command(self) -> SequentialCommandGroup:
+        return Drive_Around(self.drivetrain)
         to_run = self.auto_chooser.getSelected()
         if to_run == Nothing:
             return Nothing()

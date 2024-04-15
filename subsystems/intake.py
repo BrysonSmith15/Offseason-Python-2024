@@ -1,8 +1,6 @@
 from commands2 import Subsystem
+from rev import CANSparkLowLevel, CANSparkMax
 from wpimath.filter import SlewRateLimiter
-
-from rev import CANSparkLowLevel
-from rev import CANSparkMax
 
 
 class Intake(Subsystem):
@@ -16,6 +14,8 @@ class Intake(Subsystem):
         self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 500)
         self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 500)
         self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 500)
+        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 500)
+        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 500)
 
     def set_motor(self, power: float) -> None:
         power = 1 if power > 1 else -1 if power < -1 else power

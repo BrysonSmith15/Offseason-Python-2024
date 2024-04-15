@@ -1,8 +1,6 @@
 from commands2 import Subsystem
+from rev import CANSparkLowLevel, CANSparkMax
 from wpimath.filter import SlewRateLimiter
-
-from rev import CANSparkMax
-from rev import CANSparkLowLevel
 
 
 class Shooter(Subsystem):
@@ -20,6 +18,13 @@ class Shooter(Subsystem):
         # self.motor_l2.follow(self.motor_l1, False)
         self.motor_r1.follow(self.motor_l1, True)
         # self.motor_r2.follow(self.motor_l1, True)
+
+        for motor in [self.motor_l1, self.motor_r1]:
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 100)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 100)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 100)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 100)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 100)
 
     def set_motors(self, power: float) -> None:
         power = 1 if power > 1 else -1 if power < -1 else power

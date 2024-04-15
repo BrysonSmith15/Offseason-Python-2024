@@ -1,6 +1,7 @@
 import commands2
 from commands2 import SequentialCommandGroup, WaitCommand
-from wpimath.geometry import Pose2d
+from wpimath.geometry import Pose2d, Rotation2d
+from wpimath.units import feetToMeters
 
 from commands.drive_position import Drive_Position
 from commands.elevator_top import Elevator_Top
@@ -49,6 +50,12 @@ def Shoot_And_Drive(
     )
     return Shoot_Only(elevator, intake, shooter).andThen(
         Drive_Position(drivetrain, new_pose)
+    )
+
+
+def Drive_Around(drivetrain: Drivetrain) -> SequentialCommandGroup:
+    return Drive_Position(drivetrain, Pose2d(13.61, 7, Rotation2d(0))).andThen(
+        Drive_Position(drivetrain, Pose2d(13.6, feetToMeters(5.55), Rotation2d(0)))
     )
 
 

@@ -1,12 +1,8 @@
 from commands2 import Subsystem
+from ntcore import NetworkTableInstance
+from rev import CANSparkLowLevel, CANSparkMax
 from wpilib import DigitalInput, Encoder
 from wpimath.filter import SlewRateLimiter
-from ntcore import NetworkTableInstance
-
-from rev import CANSparkLowLevel, CANSparkMax
-
-from constants import elevator_constants
-from utils import *
 
 
 class Elevator(Subsystem):
@@ -36,6 +32,8 @@ class Elevator(Subsystem):
             motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 500)
             motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 500)
             motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 500)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 500)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 500)
 
         self.encoder.setReverseDirection(True)
 

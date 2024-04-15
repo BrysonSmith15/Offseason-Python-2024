@@ -24,7 +24,7 @@ class Interface:
                     print("No driver Controller")
                     exit(0)
         except Exception:
-            print("L")
+            pass
 
         self.a_button = 1
         self.b_button = 2
@@ -58,6 +58,9 @@ class Interface:
                 self.operator_controller = CommandJoystick(1)
             except Exception:
                 print("Still no operator controller")
+
+    def tmp_get_drive_top_left(self) -> Trigger:
+        return self.driver_controller.button(self.a_button)
 
     def get_drive_forward(self) -> float:
         return (
