@@ -228,11 +228,12 @@ class Drivetrain(Subsystem):
         cmd.runsWhenDisabled = lambda: True
         return cmd
 
-    def set_max_speed(self, speed: float) -> None:
+    def set_max_speed(self, speed: float, turn_speed: float) -> None:
         self.maxVelocity = speed
+        self.maxAngularVelocity = turn_speed
 
-    def set_max_speed_command(self, speed: float) -> InstantCommand:
-        return InstantCommand(lambda: self.set_max_speed(speed), self)
+    def set_max_speed_command(self, speed: float, turn_speed: float) -> InstantCommand:
+        return InstantCommand(lambda: self.set_max_speed(speed, turn_speed), self)
 
     # drive
     def run_percentage(

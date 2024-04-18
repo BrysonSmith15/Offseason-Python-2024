@@ -44,7 +44,6 @@ class SwerveModule(Subsystem):
     drive_encoder: SparkRelativeEncoder = None
     turn_encoder: SparkRelativeEncoder = None
     module_position: Translation2d = None
-    module_state: SwerveModuleState = None
     network_table: NetworkTable = None
 
     def __init__(
@@ -82,6 +81,7 @@ class SwerveModule(Subsystem):
         self.turn_pid.setPositionPIDWrappingEnabled(True)
         self.turn_pid.setPositionPIDWrappingMinInput(-180)
         self.turn_pid.setPositionPIDWrappingMaxInput(180)
+        self.turn_pid.setOutputRange(-1, 1)
 
         self.drive_encoder = self.drive_motor.getEncoder()
         self.drive_encoder.setPosition(0)
@@ -94,6 +94,7 @@ class SwerveModule(Subsystem):
         self.drive_pid.setD(drive_D)
         self.drive_pid.setFeedbackDevice(self.drive_encoder)
         self.drive_motor.setInverted(drive_inverted)
+        self.drive_pid.setOutputRange(-1, 1)
         self.drive_limiter = SlewRateLimiter(1)
 
         self.setName(f"SwerveModule/{subsystem_name}")
@@ -130,7 +131,7 @@ class SwerveModule(Subsystem):
             CANSparkLowLevel.PeriodicFrame.kStatus6, 50
         )
 
-        self.module_state = SwerveModuleState(0, Rotation2d(0))
+        self.optimal_state = SwerveModuleState(0, Rotation2d(0))
 
     def periodic(self) -> None:
         self.network_table.putNumber(
@@ -149,10 +150,10 @@ class SwerveModule(Subsystem):
             "Drive Distance (ft)", self.getPosition().distance_ft
         )
         self.network_table.putNumber(
-            "Setpoint Angle (deg)", self.module_state.angle.degrees()
+            "Setpoint Angle (deg)", self.optimal_state.angle.degrees()
         )
         self.network_table.putNumber(
-            "Setpoint Speed (fps)", self.module_state.speed_fps
+            "Setpoint Speed (fps)", self.optimal_state.speed_fps
         )
         self.network_table.putNumber(
             "Drive Speed (fps)", self.drive_encoder.getVelocity()
@@ -199,13 +200,13 @@ class SwerveModule(Subsystem):
         optimalState: SwerveModuleState = SwerveModuleState.optimize(
             desiredState, currAngleRotation
         )
-        self.module_state = optimalState
+        self.optimal_state = optimalState
 
         velocity = optimalState.speed
         # self.drive_pid.setReference(velocity, CANSparkLowLevel.ControlType.kVelocity)
         self.drive_motor.set(self.drive_limiter.calculate(velocity / 15))
         self.turn_pid.setReference(
-            inputModulus(optimalState.angle.degrees(), 0, 360) / 360,
+            inputModulus(optimalState.angle.degrees(), -180, 180) / 180,
             CANSparkLowLevel.ControlType.kPosition,
         )
 

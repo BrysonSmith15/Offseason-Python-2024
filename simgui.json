@@ -62,9 +62,6 @@
         "DrivePos": {
           "open": true
         },
-        "DrivePose": {
-          "open": true
-        },
         "open": true
       },
       "LiveWindow": {
@@ -96,9 +93,7 @@
         "bl": {
           "open": true
         },
-        "br": {
-          "open": true
-        }
+        "open": true
       }
     }
   },

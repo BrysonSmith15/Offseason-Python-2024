@@ -1,3 +1,5 @@
+import math
+
 from commands2.button import Trigger
 from wpilib import DriverStation, SendableChooser, SmartDashboard
 
@@ -87,8 +89,10 @@ class RobotContainer:
 
         # go really fast to fight and play defense
         self.interface.get_drive_defense_mode().onTrue(
-            self.drivetrain.set_max_speed_command(feetToMeters(100.0))
-        ).onFalse(self.drivetrain.set_max_speed_command(feetToMeters(15.0)))
+            self.drivetrain.set_max_speed_command(feetToMeters(100.0), 50 * math.pi)
+        ).onFalse(
+            self.drivetrain.set_max_speed_command(feetToMeters(15.0), 2 * math.pi)
+        )
         # reset the gyro on button press
         self.interface.get_drive_reset_gyro().onTrue(
             self.drivetrain.reset_gyro_command()
