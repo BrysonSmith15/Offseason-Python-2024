@@ -102,6 +102,18 @@ class Drivetrain(Subsystem):
 
         SmartDashboard.putData("Field", Field2d())
 
+        self.__ntTbl__.putNumber("xPID/P", self.x_pid.getP())
+        self.__ntTbl__.putNumber("xPID/I", self.x_pid.getI())
+        self.__ntTbl__.putNumber("xPID/D", self.x_pid.getD())
+
+        self.__ntTbl__.putNumber("yPID/P", self.y_pid.getP())
+        self.__ntTbl__.putNumber("yPID/I", self.y_pid.getI())
+        self.__ntTbl__.putNumber("yPID/D", self.y_pid.getD())
+
+        self.__ntTbl__.putNumber("tPID/P", self.t_pid.getP())
+        self.__ntTbl__.putNumber("tPID/I", self.t_pid.getI())
+        self.__ntTbl__.putNumber("tPID/D", self.t_pid.getD())
+
     def periodic(self):
         pose = self.odometry.updateWithTime(
             Timer.getFPGATimestamp(),
@@ -154,14 +166,17 @@ class Drivetrain(Subsystem):
         x_p = self.__ntTbl__.getNumber("xPID/P", self.x_pid.getP())
         x_i = self.__ntTbl__.getNumber("xPID/I", self.x_pid.getI())
         x_d = self.__ntTbl__.getNumber("xPID/D", self.x_pid.getD())
+        self.__ntTbl__.putNumber("xPID/Error", self.x_pid.getPositionError())
 
         y_p = self.__ntTbl__.getNumber("yPID/P", self.y_pid.getP())
         y_i = self.__ntTbl__.getNumber("yPID/I", self.y_pid.getI())
         y_d = self.__ntTbl__.getNumber("yPID/D", self.y_pid.getD())
+        self.__ntTbl__.putNumber("yPID/Error", self.y_pid.getPositionError())
 
         t_p = self.__ntTbl__.getNumber("tPID/P", self.t_pid.getP())
         t_i = self.__ntTbl__.getNumber("tPID/I", self.t_pid.getI())
         t_d = self.__ntTbl__.getNumber("tPID/D", self.t_pid.getD())
+        self.__ntTbl__.putNumber("tPID/Error", self.t_pid.getPositionError())
 
         self.x_pid.setPID(x_p, x_i, x_d)
         self.y_pid.setPID(y_p, y_i, y_d)
@@ -185,7 +200,13 @@ class Drivetrain(Subsystem):
         return self.odometry
 
     def get_pose(self) -> Pose2d:
-        return self.odometry.getEstimatedPosition()
+        estimated = self.odometry.getEstimatedPosition()
+        if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
+            pose_x = feetToMeters(54) - estimated.X()
+            pose_y = feetToMeters(27) - estimated.Y()
+            pose_t = estimated.rotation() - Rotation2d.fromDegrees(180)
+            return Pose2d(pose_x, pose_y, pose_t)
+        return estimated
 
     def get_angle(self) -> Rotation2d:
         return self.gyro.getRotation2d()

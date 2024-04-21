@@ -33,9 +33,19 @@
     }
   },
   "Window": {
+    "###/FMSInfo": {
+      "Collapsed": "0",
+      "Pos": "50,465",
+      "Size": "471,383"
+    },
+    "###/SmartDashboard/Auto Mode": {
+      "Collapsed": "0",
+      "Pos": "1264,1514",
+      "Size": "684,102"
+    },
     "###/SmartDashboard/Field": {
       "Collapsed": "0",
-      "Pos": "-2,1448",
+      "Pos": "51,1390",
       "Size": "1187,651"
     },
     "###Addressable LEDs": {
@@ -45,33 +55,33 @@
     },
     "###FMS": {
       "Collapsed": "0",
-      "Pos": "-7,417",
+      "Pos": "63,858",
       "Size": "436,424"
     },
     "###Joysticks": {
       "Collapsed": "0",
-      "Pos": "1294,1558",
+      "Pos": "1294,972",
       "Size": "2236,544"
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "1448,38",
+      "Pos": "1967,140",
       "Size": "1552,1413"
     },
     "###NetworkTables Info": {
       "Collapsed": "0",
-      "Pos": "2441,1906",
+      "Pos": "2678,1666",
       "Size": "1117,347"
     },
     "###Other Devices": {
       "Collapsed": "0",
-      "Pos": "3005,47",
+      "Pos": "1901,47",
       "Size": "836,1465"
     },
     "###Plot <0>": {
       "Collapsed": "0",
-      "Pos": "244,110",
-      "Size": "1154,1345"
+      "Pos": "752,68",
+      "Size": "1120,1277"
     },
     "###System Joysticks": {
       "Collapsed": "0",

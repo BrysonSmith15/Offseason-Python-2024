@@ -32,7 +32,7 @@ class Robot(TimedRobot):
 
     # Teleop Robot Functions
     def teleopInit(self):
-        pass
+        self.m_robotContainer.teleop_bindings()
 
     def teleopPeriodic(self):
         pass

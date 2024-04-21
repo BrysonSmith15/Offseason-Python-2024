@@ -5,6 +5,7 @@ from wpilib import DriverStation, SendableChooser, SmartDashboard
 
 from commands.autos import *
 from commands.drive_joystick import Drive_Joystick
+from commands.drive_wpi_path import Drive_WPI_Path
 from commands.elevator_bottom import Elevator_Bottom
 from commands.led_chase import LED_Chase
 from subsystems.drivetrain import Drivetrain
@@ -40,7 +41,7 @@ class RobotContainer:
 
         SmartDashboard.putData("Auto Mode", self.auto_chooser)
 
-    def set_default_commands(self) -> None:
+    def teleop_bindings(self) -> None:
         self.drivetrain.setDefaultCommand(
             Drive_Joystick(
                 self.drivetrain,
@@ -52,39 +53,16 @@ class RobotContainer:
                 self.interface.get_drive_holonomic().getAsBoolean,
             )
         )
-        # self.leds.setDefaultCommand(
-        #     LED_Chase(self.leds, (255, 255, 255), (255, 50, 0), 40)
-        # )
+
+    def set_default_commands(self) -> None:
+        self.leds.setDefaultCommand(
+            LED_Chase(self.leds, (255, 255, 255), (255, 50, 0), 40)
+        )
 
     def configure_bindings(self) -> None:
         self.interface.tmp_get_drive_top_left().onTrue(
-            Drive_Position(
-                self.drivetrain, Pose2d(1, 1, Rotation2d.fromDegrees(90))
-            ).andThen(
-                Drive_Position(
-                    self.drivetrain,
-                    Pose2d(
-                        feetToMeters(15), feetToMeters(15), Rotation2d.fromDegrees(180)
-                    ),
-                )
-            )
-        )
-
-        self.interface.driver_controller.button(self.interface.b_button).onTrue(
-            SequentialCommandGroup(
-                Drive_Position(
-                    self.drivetrain, Pose2d(0, 0, Rotation2d.fromDegrees(0))
-                ),
-                WaitCommand(0.1),
-                Drive_Position(
-                    self.drivetrain,
-                    Pose2d(
-                        feetToMeters(27),
-                        feetToMeters(13.5),
-                        Rotation2d.fromDegrees(180),
-                    ),
-                ),
-            )
+            # Drive_Around(self.drivetrain, True)
+            Drive_WPI_Path(self.drivetrain, "4 Note.wpilib.json")
         )
 
         # go really fast to fight and play defense
@@ -148,8 +126,9 @@ class RobotContainer:
         )
 
     def get_auto_command(self) -> SequentialCommandGroup:
-        return Drive_Around(self.drivetrain)
+        # return Drive_Around(self.drivetrain, True)
         to_run = self.auto_chooser.getSelected()
+        print(to_run)
         if to_run == Nothing:
             return Nothing()
         elif to_run == Shoot_Only:

@@ -1,33 +1,43 @@
+import wpilib
 from commands2 import Command
 from ntcore import NetworkTableInstance
-from wpimath.geometry import Pose2d, Rotation2d
+from wpimath.trajectory import TrajectoryUtil
 
 from subsystems.drivetrain import Drivetrain
 
 
-class Drive_Path(Command):
-    def __init__(self, drivetrain: Drivetrain, points: [Pose2d]):
+class Drive_WPI_Path(Command):
+    def __init__(self, drivetrain: Drivetrain, filename: str):
         super().__init__()
+        deploy_directory = (
+            "\\".join(wpilib.getDeployDirectory().split("\\")[:-1]) + "\\output"
+        )
+        try:
+            self.path = [
+                state.pose
+                for state in TrajectoryUtil.fromPathweaverJson(
+                    f"{deploy_directory}\\{filename}"
+                ).states()
+            ]
+        except FileNotFoundError as ex:
+            print(f"{filename} auto path not found\n{ex}\n")
+
         self.addRequirements(drivetrain)
-
         self.drivetrain = drivetrain
-        self.points = points
-
-        self.path = []  # self.curve(points[0], points[1], points[2], 5)
         self.x_pid = self.drivetrain.x_pid
         self.y_pid = self.drivetrain.y_pid
         self.t_pid = self.drivetrain.t_pid
-        self.net_table = NetworkTableInstance.getDefault().getTable("Drive Path")
-
+        self.net_table = NetworkTableInstance.getDefault().getTable(
+            "Drivetrain/Follow WPI Path"
+        )
         self.counter = 0
 
     def initialize(self) -> None:
+        print(self.path)
         curr_position = self.drivetrain.get_pose()
         self.x_pid.reset(curr_position.X())
         self.y_pid.reset(curr_position.Y())
         self.t_pid.reset(curr_position.rotation().radians())
-        self.path = self.curve(self.points[0], self.points[1], self.points[2], 4)
-        print(self.path)
         # set coast
         self.drivetrain.set_drive_idle(True)
         self.counter = 0
@@ -69,62 +79,5 @@ class Drive_Path(Command):
         return len(self.path) == 0
 
     def end(self, interrupted: bool) -> None:
-        # set brake
         self.drivetrain.set_drive_idle(False)
         self.drivetrain.stop()
-
-    @staticmethod
-    def curve(
-        p0: Pose2d,
-        p1: Pose2d,
-        p2: Pose2d,
-        nTimes: int = 1000,
-    ):
-        """
-        given the three control points
-        generate a curve that gets "kinda close" to each with midpoints 'n stuff
-
-        My docs are the best ever, I promise
-        """
-
-        def lerp(v0: float, v1: float, t: float):
-            return (1 - t) * v0 + t * v1
-
-        p01_interpolation = list(
-            zip(
-                [lerp(p0.X(), p1.X(), i / nTimes) for i in range(1, nTimes + 1)],
-                [lerp(p0.Y(), p1.Y(), i / nTimes) for i in range(1, nTimes + 1)],
-            )
-        )
-        p12_interpolation = list(
-            zip(
-                [lerp(p1.X(), p2.X(), i / nTimes) for i in range(1, nTimes + 1)],
-                [lerp(p1.Y(), p2.Y(), i / nTimes) for i in range(1, nTimes + 1)],
-            )
-        )
-        a = list(
-            zip(
-                [
-                    lerp(p01_interpolation[i][0], p12_interpolation[i][0], i / nTimes)
-                    for i in range(nTimes)
-                ],
-                [
-                    lerp(p01_interpolation[i][1], p12_interpolation[i][1], i / nTimes)
-                    for i in range(nTimes)
-                ],
-            )
-        )
-        return [
-            Pose2d(
-                b[0],
-                b[1],
-                Rotation2d.fromDegrees(
-                    lerp(
-                        p0.rotation().degrees(),
-                        p2.rotation().degrees(),
-                        idx / (len(a) - 1),
-                    )
-                ),
-            )
-            for idx, b in enumerate(a)
-        ]

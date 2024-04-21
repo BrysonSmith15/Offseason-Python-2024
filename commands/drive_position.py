@@ -18,12 +18,13 @@ class Drive_Position(Command):
         self.t_pid = self.drivetrain.t_pid
 
     def initialize(self):
-        position = self.drivetrain.odometry.getEstimatedPosition()
-        self.t_pid.reset(
-            position.rotation().radians()
-            # + self.drivetrain.t_pid.getPositionTolerance()
-            # self.drivetrain.get_angle().radians()
-        )
+        # position = self.drivetrain.odometry.getEstimatedPosition()
+        # self.t_pid.reset(
+        #     position.rotation().radians()
+        # + self.drivetrain.t_pid.getPositionTolerance()
+        # self.drivetrain.get_angle().radians()
+        # )
+        pass
 
     def execute(self):
         position = self.drivetrain.odometry.getEstimatedPosition()
