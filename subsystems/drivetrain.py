@@ -8,7 +8,6 @@ from wpilib import DriverStation, Field2d, RobotBase, SmartDashboard, Timer
 from wpilib._wpilib import SerialPort
 from wpimath.controller import ProfiledPIDController
 from wpimath.estimator import SwerveDrive4PoseEstimator
-from wpimath.filter import SlewRateLimiter
 from wpimath.geometry import Pose2d, Rotation2d, Translation2d
 from wpimath.kinematics import ChassisSpeeds, SwerveDrive4Kinematics
 from wpimath.trajectory import TrapezoidProfile
@@ -37,9 +36,9 @@ class Drivetrain(Subsystem):
         self.robotName = "Robot"
         self.gyro = AHRS(SerialPort.Port.kUSB1)
 
-        self.fl = SwerveModule("fl", 14, 12, 13, True, True)
+        self.fl = SwerveModule("fl", 14, 12, 13, False, True)
         self.fr = SwerveModule("fr", 11, 9, 10, False, True)
-        self.bl = SwerveModule("bl", 17, 15, 16, True, False)
+        self.bl = SwerveModule("bl", 17, 15, 16, False, False)
         self.br = SwerveModule("br", 8, 6, 7, False, False)
 
         self.kinematics = SwerveDrive4Kinematics(
@@ -62,12 +61,12 @@ class Drivetrain(Subsystem):
         )
         self.odometry.setVisionMeasurementStdDevs((0.1, 0.1, math.pi / 8))
 
-        self.x_limiter = SlewRateLimiter(self.maxVelocity / self.time_to_max_velocity)
-        self.y_limiter = SlewRateLimiter(self.maxVelocity / self.time_to_max_velocity)
-        self.t_limiter = SlewRateLimiter(
-            self.maxAngularVelocity / self.time_to_max_velocity,
-            -4 * self.maxAngularVelocity / self.time_to_max_velocity,
-        )
+        # self.x_limiter = SlewRateLimiter(self.maxVelocity / self.time_to_max_velocity)
+        # self.y_limiter = SlewRateLimiter(self.maxVelocity / self.time_to_max_velocity)
+        # self.t_limiter = SlewRateLimiter(
+        #     self.maxAngularVelocity / self.time_to_max_velocity,
+        #     -4 * self.maxAngularVelocity / self.time_to_max_velocity,
+        # )
 
         self.x_pid = ProfiledPIDController(
             3e-1,
@@ -126,34 +125,34 @@ class Drivetrain(Subsystem):
             ),
         )
         self.__ntTbl__.putString("Running Command", str(self.getCurrentCommand()))
-        if not self.is_real:
-            self.odometry.resetPosition(
-                self.get_angle(),
-                (
-                    self.fl.getPosition(),
-                    self.fr.getPosition(),
-                    self.bl.getPosition(),
-                    self.br.getPosition(),
-                ),
-                Pose2d(
-                    Translation2d(
-                        pose.X() + self.chassis_speeds.vx / 50,
-                        pose.Y() + self.chassis_speeds.vy / 50,
-                    ),
-                    Rotation2d(
-                        pose.rotation().radians() - self.chassis_speeds.omega / 50
-                    ),
-                ),
-            )
-            self.__ntTbl__.putNumber(
-                "ChassisSpeeds vx (fps)", self.chassis_speeds.vx_fps
-            )
-            self.__ntTbl__.putNumber(
-                "ChassisSpeeds vy (fps)", self.chassis_speeds.vy_fps
-            )
-            self.__ntTbl__.putNumber(
-                "ChassisSpeeds omega (rad/s)", self.chassis_speeds.omega
-            )
+        # if not self.is_real:
+        #     self.odometry.resetPosition(
+        #         self.get_angle(),
+        #         (
+        #             self.fl.getPosition(),
+        #             self.fr.getPosition(),
+        #             self.bl.getPosition(),
+        #             self.br.getPosition(),
+        #         ),
+        #         Pose2d(
+        #             Translation2d(
+        #                 pose.X() + self.chassis_speeds.vx / 50,
+        #                 pose.Y() + self.chassis_speeds.vy / 50,
+        #             ),
+        #             Rotation2d(
+        #                 pose.rotation().radians() - self.chassis_speeds.omega / 50
+        #             ),
+        #         ),
+        #     )
+        #     self.__ntTbl__.putNumber(
+        #         "ChassisSpeeds vx (fps)", self.chassis_speeds.vx_fps
+        #     )
+        #     self.__ntTbl__.putNumber(
+        #         "ChassisSpeeds vy (fps)", self.chassis_speeds.vy_fps
+        #     )
+        #     self.__ntTbl__.putNumber(
+        #         "ChassisSpeeds omega (rad/s)", self.chassis_speeds.omega
+        #     )
 
         poseX = round(pose.X(), 3)
         poseY = round(pose.Y(), 3)
@@ -293,7 +292,7 @@ class Drivetrain(Subsystem):
 
     def run_module_states(self, states) -> None:
         states = self.kinematics.desaturateWheelSpeeds(states, self.maxVelocity)
-        self.fl.setDesiredState(states[0])
-        self.fr.setDesiredState(states[1])
-        self.bl.setDesiredState(states[2])
-        self.br.setDesiredState(states[3])
+        self.fl.setDesiredState(states[0], self.maxVelocity)
+        self.fr.setDesiredState(states[1], self.maxVelocity)
+        self.bl.setDesiredState(states[2], self.maxVelocity)
+        self.br.setDesiredState(states[3], self.maxVelocity)

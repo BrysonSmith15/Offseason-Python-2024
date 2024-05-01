@@ -65,7 +65,8 @@ class Drive_Joystick(Command):
             r = target * mag
             r = min(max(r, -1.0), 1.0)
         else:
-            r = self.drivetrain.t_limiter.calculate(t)
+            # r = self.drivetrain.t_limiter.calculate(t)
+            r = t
 
         if self.field_oriented():
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -85,7 +86,8 @@ class Drive_Joystick(Command):
         self.network_table.putBoolean(
             "DriveJoystick/FieldOriented", self.field_oriented()
         )
-        self.drivetrain.run_chassis_speeds(speeds)
+        # self.drivetrain.run_chassis_speeds(speeds)
+        self.drivetrain.run_percentage(x, y, r)
         self.network_table.putNumber("DriveJoystick/X%", x)
         self.network_table.putNumber("DriveJoystick/Y%", y)
         self.network_table.putNumber("DriveJoystick/Theta%", r)

@@ -1,11 +1,11 @@
 import math
 
+import wpimath.units
 from commands2.button import Trigger
 from wpilib import DriverStation, SendableChooser, SmartDashboard
 
 from commands.autos import *
 from commands.drive_joystick import Drive_Joystick
-from commands.drive_wpi_path import Drive_WPI_Path
 from commands.elevator_bottom import Elevator_Bottom
 from commands.led_chase import LED_Chase
 from subsystems.drivetrain import Drivetrain
@@ -60,16 +60,20 @@ class RobotContainer:
         )
 
     def configure_bindings(self) -> None:
-        self.interface.tmp_get_drive_top_left().onTrue(
-            # Drive_Around(self.drivetrain, True)
-            Drive_WPI_Path(self.drivetrain, "4 Note.wpilib.json")
-        )
+        # self.interface.tmp_get_drive_top_left().onTrue(
+        # Drive_Around(self.drivetrain, True)
+        # Drive_WPI_Path(self.drivetrain, "4 Note.wpilib.json")
+        # )
 
         # go really fast to fight and play defense
         self.interface.get_drive_defense_mode().onTrue(
-            self.drivetrain.set_max_speed_command(feetToMeters(100.0), 50 * math.pi)
+            self.drivetrain.set_max_speed_command(
+                wpimath.units.feetToMeters(100.0), 50 * math.pi
+            )
         ).onFalse(
-            self.drivetrain.set_max_speed_command(feetToMeters(15.0), 2 * math.pi)
+            self.drivetrain.set_max_speed_command(
+                wpimath.units.feetToMeters(15.0), 2 * math.pi
+            )
         )
         # reset the gyro on button press
         self.interface.get_drive_reset_gyro().onTrue(

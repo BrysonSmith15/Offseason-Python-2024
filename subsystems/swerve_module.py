@@ -18,21 +18,19 @@ from ntcore import NetworkTable, NetworkTableInstance
 from phoenix6.hardware import CANcoder
 from rev import CANSparkLowLevel, CANSparkMax, SparkRelativeEncoder
 from wpimath import inputModulus
+from wpimath.controller import PIDController
 from wpimath.filter import SlewRateLimiter
 from wpimath.geometry import Rotation2d, Translation2d
 from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
 from wpimath.units import inchesToMeters
 
 # consts
-## TODO: Check PID Conversion factors
-
-drive_P = 1e-2
+drive_P = 1e-3
 drive_I = 0.0
 drive_D = 1e-4
-drive_MaxVel_MM = 20480
 
 
-turn_P = 6e-2
+turn_P = 0.006
 turn_I = 0.0
 turn_D = 1e-6
 
@@ -60,6 +58,9 @@ class SwerveModule(Subsystem):
         self.network_table = NetworkTableInstance.getDefault().getTable(
             f"Swervemodule/{self.name}"
         )
+        self.pid_net_table = NetworkTableInstance.getDefault().getTable(
+            "Swervemodule/Swerve PID"
+        )
 
         self.cancoder = CANcoder(encoder_id)
         self.turn_motor = CANSparkMax(turn_id, CANSparkLowLevel.MotorType.kBrushless)
@@ -67,44 +68,34 @@ class SwerveModule(Subsystem):
 
         self.cancoder.set_position(self.cancoder.get_absolute_position().value)
 
-        self.turn_encoder = self.turn_motor.getEncoder()
-        self.turn_encoder.setPosition(self.cancoder.get_absolute_position().value)
-        self.turn_encoder.setPositionConversionFactor(1 / 12.8)
-        self.turn_encoder.setVelocityConversionFactor(1 / 12.8)
-
         self.turn_motor.setInverted(turn_inverted)
-        self.turn_pid = self.turn_motor.getPIDController()
-        self.turn_pid.setFeedbackDevice(self.turn_encoder)
-        self.turn_pid.setP(turn_P)
-        self.turn_pid.setI(turn_I)
-        self.turn_pid.setD(turn_D)
-        self.turn_pid.setPositionPIDWrappingEnabled(True)
-        self.turn_pid.setPositionPIDWrappingMinInput(-180)
-        self.turn_pid.setPositionPIDWrappingMaxInput(180)
-        self.turn_pid.setOutputRange(-1, 1)
+
+        self.turn_pid = PIDController(turn_P, turn_I, turn_D)
+        # self.turn_pid.setP(turn_P)
+        # self.turn_pid.setI(turn_I)
+        # self.turn_pid.setD(turn_D)
+        self.turn_pid.enableContinuousInput(-180, 180)
 
         self.drive_encoder = self.drive_motor.getEncoder()
         self.drive_encoder.setPosition(0)
         self.drive_encoder.setPositionConversionFactor(1 / 8.14)
         self.drive_encoder.setVelocityConversionFactor(1 / 8.14)
 
-        self.drive_pid = self.drive_motor.getPIDController()
-        self.drive_pid.setP(drive_P)
-        self.drive_pid.setI(drive_I)
-        self.drive_pid.setD(drive_D)
-        self.drive_pid.setFeedbackDevice(self.drive_encoder)
-        self.drive_motor.setInverted(drive_inverted)
-        self.drive_pid.setOutputRange(-1, 1)
-        self.drive_limiter = SlewRateLimiter(1)
+        self.drive_pid = PIDController(drive_P, drive_I, drive_D)
+        # self.drive_pid.setP(drive_P)
+        # self.drive_pid.setI(drive_I)
+        # self.drive_pid.setD(drive_D)
+        # accelerate fully in 1 second, decelerate in 10
+        self.drive_limiter = SlewRateLimiter(1, -10)
 
         self.setName(f"SwerveModule/{subsystem_name}")
 
-        self.network_table.putNumber("PID/Drive P", self.drive_pid.getP())
-        self.network_table.putNumber("PID/Drive I", self.drive_pid.getI())
-        self.network_table.putNumber("PID/Drive D", self.drive_pid.getD())
-        self.network_table.putNumber("PID/Turn P", self.turn_pid.getP())
-        self.network_table.putNumber("PID/Turn I", self.turn_pid.getI())
-        self.network_table.putNumber("PID/Turn D", self.turn_pid.getD())
+        self.pid_net_table.putNumber("Turn P", self.turn_pid.getP())
+        self.pid_net_table.putNumber("Turn I", self.turn_pid.getI())
+        self.pid_net_table.putNumber("Turn D", self.turn_pid.getD())
+        self.pid_net_table.putNumber("Drive P", self.turn_pid.getP())
+        self.pid_net_table.putNumber("Drive I", self.turn_pid.getI())
+        self.pid_net_table.putNumber("Drive D", self.turn_pid.getD())
 
         self.drive_motor.setPeriodicFramePeriod(
             CANSparkLowLevel.PeriodicFrame.kStatus3, 50
@@ -130,15 +121,14 @@ class SwerveModule(Subsystem):
         self.turn_motor.setPeriodicFramePeriod(
             CANSparkLowLevel.PeriodicFrame.kStatus6, 50
         )
+        self.drive_motor.setCANTimeout(50)
+        self.turn_motor.setCANTimeout(50)
 
         self.optimal_state = SwerveModuleState(0, Rotation2d(0))
 
     def periodic(self) -> None:
         self.network_table.putNumber(
             "CANCoder Turn Rotations", self.cancoder.get_absolute_position().value
-        )
-        self.network_table.putNumber(
-            "Turn Motor Rotations", self.turn_encoder.getPosition()
         )
         self.network_table.putNumber(
             "Turn Motor Angle", self.getPosition().angle.degrees()
@@ -156,46 +146,51 @@ class SwerveModule(Subsystem):
             "Setpoint Speed (fps)", self.optimal_state.speed_fps
         )
         self.network_table.putNumber(
-            "Drive Speed (fps)", self.drive_encoder.getVelocity()
+            "Drive Speed (fps)",
+            self.drive_encoder.getVelocity()
+            * -2
+            * math.pi
+            * (1 / 6),  # 1 / 6 -> 2 in radius
         )
         if (
-            self.network_table.getNumber("Drive P", self.drive_pid.getP())
-            != self.drive_pid.getP()
-        ):
-            self.drive_pid.setP(self.network_table.getNumber("Drive P", 6e-5))
-
-        if (
-            self.network_table.getNumber("Drive I", self.drive_pid.getI())
-            != self.drive_pid.getI()
-        ):
-            self.drive_pid.setI(self.network_table.getNumber("Drive I", 6e-5))
-
-        if (
-            self.network_table.getNumber("Drive D", self.drive_pid.getD())
-            != self.drive_pid.getD()
-        ):
-            self.drive_pid.setD(self.network_table.getNumber("Drive D", 6e-5))
-
-        if (
-            self.network_table.getNumber("Turn P", self.turn_pid.getP())
+            self.pid_net_table.getNumber("Turn P", self.turn_pid.getP())
             != self.turn_pid.getP()
         ):
-            self.turn_pid.setP(self.network_table.getNumber("Turn P", 6e-5))
+            self.turn_pid.setP(self.pid_net_table.getNumber("Turn P", 6e-5))
 
         if (
-            self.network_table.getNumber("Turn I", self.turn_pid.getI())
+            self.pid_net_table.getNumber("Turn I", self.turn_pid.getI())
             != self.turn_pid.getI()
         ):
-            self.turn_pid.setI(self.network_table.getNumber("Turn I", 6e-5))
+            self.turn_pid.setI(self.pid_net_table.getNumber("Turn I", 6e-5))
 
         if (
-            self.network_table.getNumber("Turn D", self.turn_pid.getD())
+            self.pid_net_table.getNumber("Turn D", self.turn_pid.getD())
             != self.turn_pid.getD()
         ):
-            self.turn_pid.setD(self.network_table.getNumber("Turn D", 6e-5), 0)
+            self.turn_pid.setD(self.pid_net_table.getNumber("Turn D", 6e-5))
 
-    def setDesiredState(self, desiredState: SwerveModuleState):
-        currAnglePos = self.turn_encoder.getPosition()
+        if (
+            self.pid_net_table.getNumber("Drive P", self.drive_pid.getP())
+            != self.drive_pid.getP()
+        ):
+            self.drive_pid.setP(self.pid_net_table.getNumber("Drive P", 6e-5))
+
+        if (
+            self.pid_net_table.getNumber("Drive I", self.drive_pid.getI())
+            != self.drive_pid.getI()
+        ):
+            self.drive_pid.setI(self.pid_net_table.getNumber("Drive I", 0))
+
+        if (
+            self.pid_net_table.getNumber("Drive D", self.drive_pid.getD())
+            != self.drive_pid.getD()
+        ):
+            self.drive_pid.setD(self.pid_net_table.getNumber("Drive D", 6e-5))
+
+    def setDesiredState(self, desiredState: SwerveModuleState, max_velocity_mps: float):
+        # currAnglePos = self.turn_encoder.getPosition()
+        currAnglePos = self.getPosition().angle.degrees()
         currAngleRotation = Rotation2d().fromDegrees(currAnglePos)
         optimalState: SwerveModuleState = SwerveModuleState.optimize(
             desiredState, currAngleRotation
@@ -204,11 +199,25 @@ class SwerveModule(Subsystem):
 
         velocity = optimalState.speed
         # self.drive_pid.setReference(velocity, CANSparkLowLevel.ControlType.kVelocity)
-        self.drive_motor.set(self.drive_limiter.calculate(velocity / 15))
-        self.turn_pid.setReference(
-            inputModulus(optimalState.angle.degrees(), -180, 180) / 180,
-            CANSparkLowLevel.ControlType.kPosition,
+        # drive_out = self.drive_pid.calculate(
+        #     velocity,
+        #     self.drive_encoder.getVelocity() * -2 * math.pi * inchesToMeters(2.0),
+        # )
+        drive_out = self.drive_limiter.Calculate(velocity / max_velocity_mps)
+        drive_out = 1 if drive_out > 1 else -1 if drive_out < -1 else drive_out
+        self.network_table.putNumber("Drive Out", drive_out)
+        self.drive_motor.set(drive_out)
+        # self.drive_motor.set(self.drive_limiter.calculate(velocity / 15))
+        turn_out = self.turn_pid.calculate(
+            self.getPosition().angle.degrees(),
+            inputModulus(optimalState.angle.degrees(), -180, 180),
         )
+        turn_out = 1 if turn_out > 1 else -1 if turn_out < -1 else turn_out
+        self.turn_motor.set(turn_out)
+        # self.turn_pid.setReference(
+        #     inputModulus(optimalState.angle.degrees(), -180, 180) / 180,
+        #     CANSparkLowLevel.ControlType.kPosition,
+        # )
 
     def getModulePosition(self) -> Translation2d:
         is_front = self.name[0] == "f"
@@ -225,7 +234,9 @@ class SwerveModule(Subsystem):
         dMeters = dPosition * 2 * math.pi * inchesToMeters(2.0)
 
         thetaPosition = Rotation2d().fromDegrees(
-            -inputModulus(self.turn_encoder.getPosition() * 180, -180, 180)
+            self.cancoder.get_absolute_position().value
+            * 360
+            # -inputModulus(self.turn_encoder.getPosition() * 360, -180, 180)
         )
 
         return SwerveModulePosition(distance=dMeters, angle=thetaPosition)
