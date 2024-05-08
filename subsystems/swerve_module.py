@@ -86,7 +86,7 @@ class SwerveModule(Subsystem):
         # self.drive_pid.setI(drive_I)
         # self.drive_pid.setD(drive_D)
         # accelerate fully in 1 second, decelerate in 10
-        self.drive_limiter = SlewRateLimiter(1, -10)
+        self.drive_limiter = SlewRateLimiter(2, -100)
 
         self.setName(f"SwerveModule/{subsystem_name}")
 
@@ -203,7 +203,7 @@ class SwerveModule(Subsystem):
         #     velocity,
         #     self.drive_encoder.getVelocity() * -2 * math.pi * inchesToMeters(2.0),
         # )
-        drive_out = self.drive_limiter.Calculate(velocity / max_velocity_mps)
+        drive_out = self.drive_limiter.calculate(velocity / max_velocity_mps)
         drive_out = 1 if drive_out > 1 else -1 if drive_out < -1 else drive_out
         self.network_table.putNumber("Drive Out", drive_out)
         self.drive_motor.set(drive_out)

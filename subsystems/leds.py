@@ -17,4 +17,7 @@ class LEDs(Subsystem):
             self.data[i].setRGB(r, g, b)
 
     def set_command(self, r: int, g: int, b: int) -> Command:
-        return self.runOnce(self.set(0, self.strip_len, r, g, b))
+        return self.runOnce(lambda: self.set(0, self.strip_len, r, g, b))
+
+    def periodic(self) -> None:
+        self.led.setData(self.data)

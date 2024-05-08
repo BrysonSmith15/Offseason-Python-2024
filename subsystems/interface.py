@@ -87,7 +87,7 @@ class Interface:
     def get_drive_turn(self) -> float:
         return (
             applyDeadband(
-                -self.driver_controller.getRawAxis(self.rx_axis), self.deadband
+                self.driver_controller.getRawAxis(self.rx_axis), self.deadband
             )
             if self.driver_controller
             else 0.0

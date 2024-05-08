@@ -208,7 +208,7 @@ class Drivetrain(Subsystem):
         return estimated
 
     def get_angle(self) -> Rotation2d:
-        return self.gyro.getRotation2d()
+        return self.gyro.getRotation2d() + Rotation2d.fromDegrees(180)
 
     def get_module_positions(self):
         return (
