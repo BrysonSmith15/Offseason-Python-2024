@@ -1,6 +1,7 @@
 import math
 
 import wpimath.units
+from commands2 import InstantCommand
 from commands2.button import Trigger
 from wpilib import DriverStation, SendableChooser, SmartDashboard
 
@@ -111,14 +112,14 @@ class RobotContainer:
                 (
                     (
                         255
-                        if DriverStation.getAlliance() == DriverStation.Alliance.kRed
-                        else 0
+                        if DriverStation.getAlliance() is None
+                        else 255 if DriverStation.getAlliance().name == "kRed" else 0
                     ),
                     0,
                     (
-                        255
-                        if DriverStation.getAlliance() == DriverStation.Alliance.kBlue
-                        else 0
+                        50
+                        if DriverStation.getAlliance() is None
+                        else 255 if DriverStation.getAlliance().name == "kBlue" else 0
                     ),
                 ),
                 40,
@@ -127,6 +128,12 @@ class RobotContainer:
             self.drivetrain.set_drive_idle_command(True)
         ).onFalse(
             self.drivetrain.set_turn_idle_command(True)
+        ).onTrue(
+            InstantCommand(
+                lambda: SmartDashboard.putString(
+                    "Alliance", str(DriverStation.getAlliance().name)
+                ),
+            ),
         )
 
     def get_auto_command(self) -> SequentialCommandGroup:

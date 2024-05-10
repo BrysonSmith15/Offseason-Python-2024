@@ -36,7 +36,7 @@
     "###/FMSInfo": {
       "Collapsed": "0",
       "Pos": "50,465",
-      "Size": "471,383"
+      "Size": "436,383"
     },
     "###/SmartDashboard/Auto Mode": {
       "Collapsed": "0",
@@ -50,8 +50,8 @@
     },
     "###Addressable LEDs": {
       "Collapsed": "0",
-      "Pos": "-10,49",
-      "Size": "170,727"
+      "Pos": "1935,177",
+      "Size": "367,957"
     },
     "###FMS": {
       "Collapsed": "0",
@@ -65,7 +65,7 @@
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "1967,140",
+      "Pos": "2280,129",
       "Size": "1552,1413"
     },
     "###NetworkTables Info": {

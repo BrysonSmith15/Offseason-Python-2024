@@ -1,6 +1,8 @@
-from commands2 import Command
-from subsystems.leds import LEDs
 from typing import Tuple
+
+from commands2 import Command
+
+from subsystems.leds import LEDs
 
 
 class LED_Chase(Command):
@@ -48,10 +50,11 @@ class LED_Chase(Command):
             self.led.set(
                 chase_end - self.led.strip_len + 1,
                 self.chase_point,
-                self.chase_color[0],
-                self.chase_color[1],
-                self.chase_color[2],
+                self.main_color[0],
+                self.main_color[1],
+                self.main_color[2],
             )
+
         else:
             self.led.set(
                 0,

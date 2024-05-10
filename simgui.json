@@ -2,7 +2,11 @@
   "HALProvider": {
     "Addressable LEDs": {
       "0": {
-        "columns": 2
+        "columns": 4,
+        "order": 1
+      },
+      "window": {
+        "visible": true
       }
     },
     "Other Devices": {
@@ -83,6 +87,9 @@
           "open": true
         }
       },
+      "FMSInfo": {
+        "open": true
+      },
       "LiveWindow": {
         ".status": {
           "open": true
@@ -106,7 +113,8 @@
         },
         "double[]##v_/SmartDashboard/Field\\Robot": {
           "open": true
-        }
+        },
+        "open": true
       }
     }
   },
@@ -128,7 +136,6 @@
         {
           "axis": [
             {
-              "autoFit": true,
               "max": 35.0,
               "min": -35.0
             }
