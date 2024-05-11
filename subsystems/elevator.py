@@ -11,6 +11,16 @@ class Elevator(Subsystem):
         self.setName("Elevator")
         self.network_table = NetworkTableInstance.getDefault().getTable("Elevator")
 
+        self.up_speed = 0.45
+        self.down_speed = 0.0
+        self.soft_down_speed = 0.1
+        self.network_table.putNumber("Up Speed", self.up_speed)
+        self.network_table.putNumber("Down Speed", self.down_speed)
+        self.network_table.putNumber("Soft Down Speed", self.soft_down_speed)
+
+        self.stable_ticks = 650
+        self.network_table.putNumber("Stable Ticks", self.stable_ticks)
+
         self.motor_l1 = CANSparkMax(26, CANSparkLowLevel.MotorType.kBrushed)
         self.motor_l2 = CANSparkMax(27, CANSparkLowLevel.MotorType.kBrushed)
         self.motor_r1 = CANSparkMax(24, CANSparkLowLevel.MotorType.kBrushed)
@@ -65,3 +75,11 @@ class Elevator(Subsystem):
         if self.bot_pressed():
             self.encoder.reset()
         self.network_table.putNumber("Encoder Ticks", self.get_ticks())
+        self.up_speed = self.network_table.getNumber("Up Speed", self.up_speed)
+        self.down_speed = self.network_table.getNumber("Down Speed", self.down_speed)
+        self.soft_down_speed = self.network_table.getNumber(
+            "Soft Down Speed", self.soft_down_speed
+        )
+        self.stable_ticks = self.network_table.getNumber(
+            "Stable Ticks", self.stable_ticks
+        )

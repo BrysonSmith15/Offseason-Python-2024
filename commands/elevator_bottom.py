@@ -1,7 +1,6 @@
 from commands2 import Command
-from subsystems.elevator import Elevator
 
-from constants import elevator_constants
+from subsystems.elevator import Elevator
 
 
 class Elevator_Bottom(Command):
@@ -11,15 +10,13 @@ class Elevator_Bottom(Command):
         self.elevator = elevator
 
     def execute(self) -> None:
-        if self.elevator.get_ticks() < elevator_constants.stable_ticks:
-            self.elevator.set_motors(elevator_constants.speed)
-        elif self.elevator.top_pressed():
-            self.elevator.set_motors(elevator_constants.speed / 4)
+        if self.elevator.get_ticks() < self.elevator.stable_ticks:
+            self.elevator.set_motors(self.elevator.soft_down_speed)
         else:
-            self.elevator.set_motors(elevator_constants.stable_up_speed)
+            self.elevator.set_motors(self.elevator.down_speed)
 
     def isFinished(self) -> bool:
-        return False
+        return self.elevator.bot_pressed()
 
     def end(self, interrupted: bool):
         self.elevator.set_motors(0)
