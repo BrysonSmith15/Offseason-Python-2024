@@ -150,8 +150,9 @@ class Interface:
             return self.operator_controller.button(self.start_button)
         else:
             return (
-                self.driver_controller.button(self.y_button)
-                if self.driver_controller
+                # self.driver_controller.button(self.y_button)
+                None
+                if False  # self.driver_controller
                 else Trigger(lambda: False)
             )
 
@@ -164,8 +165,9 @@ class Interface:
             )
         else:
             return (
-                self.driver_controller.button(self.a_button)
-                if self.driver_controller
+                # self.driver_controller.button(self.a_button)
+                None
+                if False  # self.driver_controller
                 else Trigger(lambda: False)
             )
 
@@ -178,8 +180,9 @@ class Interface:
             )
         else:
             return (
-                self.driver_controller.pov(0)
-                if self.driver_controller
+                # self.driver_controller.pov(0)
+                None
+                if False  # self.driver_controller
                 else Trigger(lambda: False)
             )
 
@@ -192,8 +195,9 @@ class Interface:
             )
         else:
             return (
-                self.driver_controller.pov(180)
-                if self.driver_controller
+                # self.driver_controller.pov(180)
+                None
+                if False  # self.driver_controller
                 else Trigger(lambda: False)
             )
 
