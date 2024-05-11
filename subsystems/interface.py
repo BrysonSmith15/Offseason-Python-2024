@@ -63,8 +63,21 @@ class Interface:
             except Exception:
                 print("Still no operator controller")
 
-    def tmp_get_drive_top_left(self) -> Trigger:
-        return self.driver_controller.button(self.a_button)
+    def tmp_rotate_forwards(self) -> Trigger:
+        if self.operator_controller:
+            return self.driver_controller.button(self.y_button)
+
+    def tmp_rotate_backwards(self) -> Trigger:
+        if self.operator_controller:
+            return self.driver_controller.button(self.a_button)
+
+    def tmp_drive_forwards(self) -> Trigger:
+        if self.operator_controller:
+            return self.driver_controller.povUp()
+
+    def tmp_drive_back(self) -> Trigger:
+        if self.operator_controller:
+            return self.driver_controller.povDown()
 
     def get_drive_forward(self) -> float:
         return (

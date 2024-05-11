@@ -166,16 +166,19 @@ class Drivetrain(Subsystem):
         x_i = self.__ntTbl__.getNumber("xPID/I", self.x_pid.getI())
         x_d = self.__ntTbl__.getNumber("xPID/D", self.x_pid.getD())
         self.__ntTbl__.putNumber("xPID/Error", self.x_pid.getPositionError())
+        self.__ntTbl__.putNumber("xPID/Setpoint", self.x_pid.getSetpoint())
 
         y_p = self.__ntTbl__.getNumber("yPID/P", self.y_pid.getP())
         y_i = self.__ntTbl__.getNumber("yPID/I", self.y_pid.getI())
         y_d = self.__ntTbl__.getNumber("yPID/D", self.y_pid.getD())
         self.__ntTbl__.putNumber("yPID/Error", self.y_pid.getPositionError())
+        self.__ntTbl__.putNumber("yPID/Setpoint", self.y_pid.getSetpoint())
 
         t_p = self.__ntTbl__.getNumber("tPID/P", self.t_pid.getP())
         t_i = self.__ntTbl__.getNumber("tPID/I", self.t_pid.getI())
         t_d = self.__ntTbl__.getNumber("tPID/D", self.t_pid.getD())
         self.__ntTbl__.putNumber("tPID/Error", self.t_pid.getPositionError())
+        self.__ntTbl__.putNumber("tPID/Setpoint", self.t_pid.getSetpoint())
 
         self.x_pid.setPID(x_p, x_i, x_d)
         self.y_pid.setPID(y_p, y_i, y_d)
@@ -208,6 +211,8 @@ class Drivetrain(Subsystem):
         return estimated
 
     def get_angle(self) -> Rotation2d:
+        if self.is_real():
+            return self.get_pose().rotation()
         return self.gyro.getRotation2d() + Rotation2d.fromDegrees(180)
 
     def get_module_positions(self):

@@ -6,7 +6,9 @@ from commands2.button import Trigger
 from wpilib import DriverStation, SendableChooser, SmartDashboard
 
 from commands.autos import *
+from commands.drive_angle import DriveAngle
 from commands.drive_joystick import Drive_Joystick
+from commands.drive_translation import DriveTranslation
 from commands.elevator_bottom import Elevator_Bottom
 from commands.led_chase import LED_Chase
 from subsystems.drivetrain import Drivetrain
@@ -61,11 +63,6 @@ class RobotContainer:
         )
 
     def configure_bindings(self) -> None:
-        # self.interface.tmp_get_drive_top_left().onTrue(
-        # Drive_Around(self.drivetrain, True)
-        # Drive_WPI_Path(self.drivetrain, "4 Note.wpilib.json")
-        # )
-
         # go really fast to fight and play defense
         self.interface.get_drive_defense_mode().onTrue(
             self.drivetrain.set_max_speed_command(
@@ -79,6 +76,26 @@ class RobotContainer:
         # reset the gyro on button press
         self.interface.get_drive_reset_gyro().onTrue(
             self.drivetrain.reset_gyro_command()
+        )
+
+        # test drive positions
+        # rotate to the front
+        self.interface.tmp_rotate_forwards().onTrue(
+            DriveAngle(self.drivetrain, Rotation2d.fromDegrees(0))
+        )
+        # rotate to the back
+        self.interface.tmp_rotate_backwards().onTrue(
+            DriveAngle(self.drivetrain, Rotation2d.fromDegrees(180))
+        )
+        # drive 1 ft forwards
+        self.interface.tmp_drive_forwards().onTrue(
+            DriveTranslation(self.drivetrain, Pose2d(feetToMeters(1), 0, Rotation2d(0)))
+        )
+        # drive 1 ft backwards
+        self.interface.tmp_drive_forwards().onTrue(
+            DriveTranslation(
+                self.drivetrain, Pose2d(-feetToMeters(1), 0, Rotation2d(0))
+            )
         )
 
         # move shooter to the top
