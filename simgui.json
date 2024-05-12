@@ -4,9 +4,6 @@
       "0": {
         "columns": 4,
         "order": 1
-      },
-      "window": {
-        "visible": true
       }
     },
     "Other Devices": {
@@ -75,8 +72,14 @@
         },
         "open": true
       },
+      "DriveTranslation": {
+        "open": true
+      },
       "Drivetrain": {
         "Drive Trajectory": {
+          "open": true
+        },
+        "DriveJoystick": {
           "open": true
         },
         "DrivePos": {
@@ -86,9 +89,6 @@
         "yPID": {
           "open": true
         }
-      },
-      "FMSInfo": {
-        "open": true
       },
       "LiveWindow": {
         ".status": {
@@ -113,8 +113,7 @@
         },
         "double[]##v_/SmartDashboard/Field\\Robot": {
           "open": true
-        },
-        "open": true
+        }
       }
     }
   },

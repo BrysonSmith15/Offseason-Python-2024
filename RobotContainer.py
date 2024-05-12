@@ -1,7 +1,6 @@
 import math
 
 import wpimath.units
-from commands2 import InstantCommand
 from commands2.button import Trigger
 from wpilib import DriverStation, SendableChooser, SmartDashboard
 
@@ -89,12 +88,12 @@ class RobotContainer:
         )
         # drive 1 ft forwards
         self.interface.tmp_drive_forwards().onTrue(
-            DriveTranslation(self.drivetrain, Pose2d(feetToMeters(1), 0, Rotation2d(0)))
+            DriveTranslation(self.drivetrain, Pose2d(feetToMeters(5), 0, Rotation2d(0)))
         )
         # drive 1 ft backwards
         self.interface.tmp_drive_forwards().onTrue(
             DriveTranslation(
-                self.drivetrain, Pose2d(-feetToMeters(1), 0, Rotation2d(0))
+                self.drivetrain, Pose2d(-feetToMeters(5), 0, Rotation2d(0))
             )
         )
 
@@ -145,12 +144,6 @@ class RobotContainer:
             self.drivetrain.set_drive_idle_command(True)
         ).onFalse(
             self.drivetrain.set_turn_idle_command(True)
-        ).onTrue(
-            InstantCommand(
-                lambda: SmartDashboard.putString(
-                    "Alliance", str(DriverStation.getAlliance().name)
-                ),
-            ),
         )
 
     def get_auto_command(self) -> SequentialCommandGroup:

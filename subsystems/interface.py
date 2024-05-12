@@ -64,20 +64,28 @@ class Interface:
                 print("Still no operator controller")
 
     def tmp_rotate_forwards(self) -> Trigger:
-        if self.operator_controller:
-            return self.driver_controller.button(self.y_button)
+        # if self.operator_controller:
+        return self.driver_controller.button(self.y_button)
+        # else:
+        #     return Trigger(lambda: False)
 
     def tmp_rotate_backwards(self) -> Trigger:
-        if self.operator_controller:
-            return self.driver_controller.button(self.a_button)
+        # if self.operator_controller:
+        return self.driver_controller.button(self.a_button)
+        # else:
+        #     return Trigger(lambda: False)
 
     def tmp_drive_forwards(self) -> Trigger:
-        if self.operator_controller:
-            return self.driver_controller.povUp()
+        # if self.operator_controller:
+        return self.driver_controller.povUp()
+        # else:
+        #     return Trigger(lambda: False)
 
     def tmp_drive_back(self) -> Trigger:
-        if self.operator_controller:
-            return self.driver_controller.povDown()
+        # if self.operator_controller:
+        return self.driver_controller.povDown()
+        # else:
+        #     return Trigger(lambda: False)
 
     def get_drive_forward(self) -> float:
         return (

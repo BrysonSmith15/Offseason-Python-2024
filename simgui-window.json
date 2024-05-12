@@ -36,7 +36,7 @@
     "###/FMSInfo": {
       "Collapsed": "0",
       "Pos": "50,465",
-      "Size": "436,383"
+      "Size": "471,383"
     },
     "###/SmartDashboard/Auto Mode": {
       "Collapsed": "0",
@@ -60,7 +60,7 @@
     },
     "###Joysticks": {
       "Collapsed": "0",
-      "Pos": "1294,972",
+      "Pos": "1931,1486",
       "Size": "2236,544"
     },
     "###NetworkTables": {
@@ -85,8 +85,8 @@
     },
     "###System Joysticks": {
       "Collapsed": "0",
-      "Pos": "-10,182",
-      "Size": "232,254"
+      "Pos": "1310,1606",
+      "Size": "516,506"
     },
     "###Timing": {
       "Collapsed": "0",
