@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: photonlibpy
+Version: 2024.3.1
+Summary: Pure-python implementation of PhotonLib for interfacing with PhotonVision on coprocessors.
+Home-page: https://photonvision.org
+Author: Photonvision Development Team
+Description-Content-Type: text/markdown
+Requires-Dist: wpilib <2025,>=2024.0.0b2
+Requires-Dist: robotpy-wpimath <2025,>=2024.0.0b2
+Requires-Dist: robotpy-apriltag <2025,>=2024.0.0b2
+Requires-Dist: pyntcore <2025,>=2024.0.0b2
+
+A Pure-python implementation of PhotonLib

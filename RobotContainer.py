@@ -1,15 +1,22 @@
 import math
 
 import wpimath.units
+from wpimath.units import feetToMeters
+from wpimath.geometry import Rotation2d, Pose2d
 from commands2.button import Trigger
+from commands2 import SequentialCommandGroup
 from wpilib import DriverStation, SendableChooser, SmartDashboard
 
-from commands.autos import *
+from commands.autos import Shoot_Only, Shoot_And_Drive, Nothing
 from commands.drive_angle import DriveAngle
 from commands.drive_joystick import Drive_Joystick
 from commands.drive_translation import DriveTranslation
+from commands.shoot import Shoot
+from commands.elevator_top import Elevator_Top
 from commands.elevator_bottom import Elevator_Bottom
 from commands.led_chase import LED_Chase
+from commands.intake_run import Intake_Run
+
 from subsystems.drivetrain import Drivetrain
 from subsystems.elevator import Elevator
 from subsystems.intake import Intake
@@ -36,9 +43,12 @@ class RobotContainer:
 
         self.auto_chooser = SendableChooser()
         self.auto_chooser.addOption("Shoot Only", Shoot_Only)
-        self.auto_chooser.addOption("Shoot and Drive Left", (Shoot_And_Drive, -1))
-        self.auto_chooser.addOption("Shoot and Drive Center", (Shoot_And_Drive, 0))
-        self.auto_chooser.addOption("Shoot and Drive Right", (Shoot_And_Drive, 1))
+        self.auto_chooser.addOption(
+            "Shoot and Drive Left", (Shoot_And_Drive, -1))
+        self.auto_chooser.addOption(
+            "Shoot and Drive Center", (Shoot_And_Drive, 0))
+        self.auto_chooser.addOption(
+            "Shoot and Drive Right", (Shoot_And_Drive, 1))
         self.auto_chooser.setDefaultOption("None", Nothing)
 
         SmartDashboard.putData("Auto Mode", self.auto_chooser)
@@ -88,7 +98,8 @@ class RobotContainer:
         )
         # drive 1 ft forwards
         self.interface.tmp_drive_forwards().onTrue(
-            DriveTranslation(self.drivetrain, Pose2d(feetToMeters(5), 0, Rotation2d(0)))
+            DriveTranslation(self.drivetrain, Pose2d(
+                feetToMeters(5), 0, Rotation2d(0)))
         )
         # drive 1 ft backwards
         self.interface.tmp_drive_forwards().onTrue(
@@ -98,16 +109,26 @@ class RobotContainer:
         )
 
         # move shooter to the top
-        self.interface.get_elevator_up().onTrue(Elevator_Top(self.elevator))
+        self.interface.get_elevator_up().onTrue(
+            Elevator_Top(self.elevator)
+        )
         # move shooter to the bottom
-        self.interface.get_elevator_down().onTrue(Elevator_Bottom(self.elevator))
+        self.interface.get_elevator_down().onTrue(
+            Elevator_Bottom(self.elevator)
+        )
 
         # run intake slowly
-        self.interface.get_intake_forward().whileTrue(Intake_Run(self.intake, 0.25))
+        self.interface.get_intake_forward().whileTrue(
+            Intake_Run(self.intake, 0.25)
+        )
         # run intake full forward
-        self.interface.get_intake_full().whileTrue(Intake_Run(self.intake, 1.0))
+        self.interface.get_intake_full().whileTrue(
+            Intake_Run(self.intake, 1.0)
+        )
         # run intake reverse slowly
-        self.interface.get_intake_reverse().whileTrue(Intake_Run(self.intake, -0.25))
+        self.interface.get_intake_reverse().whileTrue(
+            Intake_Run(self.intake, -0.25)
+        )
 
         # make shooter go full speed
         self.interface.get_spin_shooter().whileTrue(Shoot(self.shooter))

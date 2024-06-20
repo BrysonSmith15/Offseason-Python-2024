@@ -5,13 +5,14 @@ from hal import SerialPort
 from navx import AHRS
 from ntcore import NetworkTableInstance
 from wpilib import DriverStation, Field2d, RobotBase, SmartDashboard, Timer
-from wpilib._wpilib import SerialPort
 from wpimath.controller import ProfiledPIDController
 from wpimath.estimator import SwerveDrive4PoseEstimator
 from wpimath.geometry import Pose2d, Rotation2d, Translation2d
 from wpimath.kinematics import ChassisSpeeds, SwerveDrive4Kinematics
 from wpimath.trajectory import TrapezoidProfile
 from wpimath.units import degreesToRadians, feetToMeters, inchesToMeters
+
+from pathplannerlib.auto import AutoBuilder
 
 from subsystems.swerve_module import SwerveModule
 
@@ -21,6 +22,16 @@ class Drivetrain(Subsystem):
 
     def __init__(self):
         super().__init__()
+
+        def is_red() -> bool:
+            alliance = DriverStation.getAlliance()
+            if alliance is not None:
+                return alliance == DriverStation.Alliance.kRed
+            # default is blue, could be better, could be worse.
+            return False
+        AutoBuilder.configureHolonomic(
+            self.get_pose, self.reset_pose, self.get_speeds,
+            self.run_chassis_speeds, is_red, self)
 
         # MPS
         self.maxVelocity = feetToMeters(15)
@@ -36,10 +47,10 @@ class Drivetrain(Subsystem):
         self.robotName = "Robot"
         self.gyro = AHRS(SerialPort.Port.kUSB1)
 
-        self.fl = SwerveModule("fl", 14, 12, 13, False, True)
-        self.fr = SwerveModule("fr", 11, 9, 10, False, True)
-        self.bl = SwerveModule("bl", 17, 15, 16, False, False)
-        self.br = SwerveModule("br", 8, 6, 7, False, False)
+        self.fl: SwerveModule = SwerveModule("fl", 14, 12, 13, False, True)
+        self.fr: SwerveModule = SwerveModule("fr", 11, 9, 10, False, True)
+        self.bl: SwerveModule = SwerveModule("bl", 17, 15, 16, False, False)
+        self.br: SwerveModule = SwerveModule("br", 8, 6, 7, False, False)
 
         self.kinematics = SwerveDrive4Kinematics(
             self.fl.getModulePosition(),
@@ -124,7 +135,8 @@ class Drivetrain(Subsystem):
                 self.br.getPosition(),
             ),
         )
-        self.__ntTbl__.putString("Running Command", str(self.getCurrentCommand()))
+        self.__ntTbl__.putString(
+            "Running Command", str(self.getCurrentCommand()))
         if not self.is_real:
             self.odometry.resetPosition(
                 self.get_angle(),
@@ -166,19 +178,22 @@ class Drivetrain(Subsystem):
         x_i = self.__ntTbl__.getNumber("xPID/I", self.x_pid.getI())
         x_d = self.__ntTbl__.getNumber("xPID/D", self.x_pid.getD())
         self.__ntTbl__.putNumber("xPID/Error", self.x_pid.getPositionError())
-        self.__ntTbl__.putNumber("xPID/Setpoint", self.x_pid.getSetpoint().position)
+        self.__ntTbl__.putNumber(
+            "xPID/Setpoint", self.x_pid.getSetpoint().position)
 
         y_p = self.__ntTbl__.getNumber("yPID/P", self.y_pid.getP())
         y_i = self.__ntTbl__.getNumber("yPID/I", self.y_pid.getI())
         y_d = self.__ntTbl__.getNumber("yPID/D", self.y_pid.getD())
         self.__ntTbl__.putNumber("yPID/Error", self.y_pid.getPositionError())
-        self.__ntTbl__.putNumber("yPID/Setpoint", self.y_pid.getSetpoint().position)
+        self.__ntTbl__.putNumber(
+            "yPID/Setpoint", self.y_pid.getSetpoint().position)
 
         t_p = self.__ntTbl__.getNumber("tPID/P", self.t_pid.getP())
         t_i = self.__ntTbl__.getNumber("tPID/I", self.t_pid.getI())
         t_d = self.__ntTbl__.getNumber("tPID/D", self.t_pid.getD())
         self.__ntTbl__.putNumber("tPID/Error", self.t_pid.getPositionError())
-        self.__ntTbl__.putNumber("tPID/Setpoint", self.t_pid.getSetpoint().position)
+        self.__ntTbl__.putNumber(
+            "tPID/Setpoint", self.t_pid.getSetpoint().position)
 
         self.x_pid.setPID(x_p, x_i, x_d)
         self.y_pid.setPID(y_p, y_i, y_d)
@@ -189,7 +204,8 @@ class Drivetrain(Subsystem):
             poseY = feetToMeters(27) - poseY
             poseT -= 180
 
-        SmartDashboard.putNumberArray(f"Field/{self.robotName}", [poseX, poseY, poseT])
+        SmartDashboard.putNumberArray(
+            f"Field/{self.robotName}", [poseX, poseY, poseT])
 
     def stop(self) -> None:
         self.run_chassis_speeds(ChassisSpeeds(0, 0, 0))
@@ -223,6 +239,11 @@ class Drivetrain(Subsystem):
             self.br.getPosition(),
         )
 
+    def get_speeds(self) -> ChassisSpeeds:
+        self.kinematics.toChassisSpeeds(
+            (self.fl.get_state(), self.fr.get_state(),
+             self.bl.get_state(), self.br.get_state()))
+
     def reset_gyro(self) -> None:
         self.gyro.reset()
 
@@ -230,6 +251,10 @@ class Drivetrain(Subsystem):
         cmd = InstantCommand(lambda: self.reset_gyro(), self)
         cmd.runsWhenDisabled = lambda: True
         return cmd
+
+    def reset_pose(self, new: Pose2d) -> None:
+        self.odometry.resetPosition(
+            self.get_angle(), self.get_module_positions(), new)
 
     def set_drive_idle(self, coast: bool):
         self.fl.set_drive_idle(coast)
@@ -259,8 +284,8 @@ class Drivetrain(Subsystem):
 
     def set_max_speed_command(self, speed: float, turn_speed: float) -> InstantCommand:
         return InstantCommand(lambda: self.set_max_speed(speed, turn_speed), self)
-
     # drive
+
     def run_percentage(
         self,
         x: float = 0.0,
@@ -296,7 +321,8 @@ class Drivetrain(Subsystem):
         self.run_module_states(list(states))
 
     def run_module_states(self, states) -> None:
-        states = self.kinematics.desaturateWheelSpeeds(states, self.maxVelocity)
+        states = self.kinematics.desaturateWheelSpeeds(
+            states, self.maxVelocity)
         self.fl.setDesiredState(states[0], self.maxVelocity)
         self.fr.setDesiredState(states[1], self.maxVelocity)
         self.bl.setDesiredState(states[2], self.maxVelocity)

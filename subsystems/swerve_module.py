@@ -1,16 +1,3 @@
-"""
-Description: Swerve Module (Swerve Drive Specialties mk4)
-Version: 1
-Date: 3/21/24
-
-Drive Motor Controllers: Spark MAX
-Turn Motor Controllers: Spark MAX
-Angle Sensors: CANCoder (turn), Neo integrated (drive)
-
-Velocity Controller: Closed Loop (Spark Integrated)
-Angle Controller: Closed Loop (WPILib)
-"""
-
 import math
 
 from commands2 import Subsystem
@@ -22,7 +9,7 @@ from wpimath.controller import PIDController
 from wpimath.filter import SlewRateLimiter
 from wpimath.geometry import Rotation2d, Translation2d
 from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
-from wpimath.units import inchesToMeters
+from wpimath.units import inchesToMeters, feetToMeters
 
 # consts
 drive_P = 1e-3
@@ -63,8 +50,10 @@ class SwerveModule(Subsystem):
         )
 
         self.cancoder = CANcoder(encoder_id)
-        self.turn_motor = CANSparkMax(turn_id, CANSparkLowLevel.MotorType.kBrushless)
-        self.drive_motor = CANSparkMax(drive_id, CANSparkLowLevel.MotorType.kBrushless)
+        self.turn_motor = CANSparkMax(
+            turn_id, CANSparkLowLevel.MotorType.kBrushless)
+        self.drive_motor = CANSparkMax(
+            drive_id, CANSparkLowLevel.MotorType.kBrushless)
 
         self.cancoder.set_position(self.cancoder.get_absolute_position().value)
 
@@ -96,6 +85,8 @@ class SwerveModule(Subsystem):
         self.pid_net_table.putNumber("Drive P", self.turn_pid.getP())
         self.pid_net_table.putNumber("Drive I", self.turn_pid.getI())
         self.pid_net_table.putNumber("Drive D", self.turn_pid.getD())
+
+        self.drive_velocity = 0
 
         self.drive_motor.setPeriodicFramePeriod(
             CANSparkLowLevel.PeriodicFrame.kStatus3, 50
@@ -145,12 +136,14 @@ class SwerveModule(Subsystem):
         self.network_table.putNumber(
             "Setpoint Speed (fps)", self.optimal_state.speed_fps
         )
+        self.drive_velocity = self.drive_encoder.getVelocity()
+        * -2
+        * math.pi
+        # 1 / 6 -> 2 in radius--1/6 becuase otherwise it is in/s, not fps
+        * (1 / 6)
         self.network_table.putNumber(
             "Drive Speed (fps)",
-            self.drive_encoder.getVelocity()
-            * -2
-            * math.pi
-            * (1 / 6),  # 1 / 6 -> 2 in radius
+            self.drive_velocity,
         )
         if (
             self.pid_net_table.getNumber("Turn P", self.turn_pid.getP())
@@ -233,13 +226,20 @@ class SwerveModule(Subsystem):
         # rotations * 2pi * radius
         dMeters = dPosition * 2 * math.pi * inchesToMeters(2.0)
 
-        thetaPosition = Rotation2d().fromDegrees(
+        thetaPosition = self.get_turn_angle()
+
+        return SwerveModulePosition(distance=dMeters, angle=thetaPosition)
+
+    def get_turn_angle(self) -> Rotation2d:
+        return Rotation2d().fromDegrees(
             self.cancoder.get_absolute_position().value
             * 360
             # -inputModulus(self.turn_encoder.getPosition() * 360, -180, 180)
         )
 
-        return SwerveModulePosition(distance=dMeters, angle=thetaPosition)
+    def get_state(self) -> SwerveModuleState:
+        SwerveModuleState(feetToMeters(self.drive_velocity),
+                          self.get_turn_angle())
 
     def set_drive_idle(self, coast: bool):
         self.drive_motor.setIdleMode(
