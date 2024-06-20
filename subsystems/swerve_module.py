@@ -60,9 +60,6 @@ class SwerveModule(Subsystem):
         self.turn_motor.setInverted(turn_inverted)
 
         self.turn_pid = PIDController(turn_P, turn_I, turn_D)
-        # self.turn_pid.setP(turn_P)
-        # self.turn_pid.setI(turn_I)
-        # self.turn_pid.setD(turn_D)
         self.turn_pid.enableContinuousInput(-180, 180)
 
         self.drive_encoder = self.drive_motor.getEncoder()
@@ -136,11 +133,9 @@ class SwerveModule(Subsystem):
         self.network_table.putNumber(
             "Setpoint Speed (fps)", self.optimal_state.speed_fps
         )
-        self.drive_velocity = self.drive_encoder.getVelocity()
-        * -2
-        * math.pi
         # 1 / 6 -> 2 in radius--1/6 becuase otherwise it is in/s, not fps
-        * (1 / 6)
+        self.drive_velocity = self.drive_encoder.getVelocity() * -2 * math.pi * (1 / 6)
+
         self.network_table.putNumber(
             "Drive Speed (fps)",
             self.drive_velocity,

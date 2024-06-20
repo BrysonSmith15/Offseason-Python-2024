@@ -1,7 +1,7 @@
 import math
 
 from commands2 import InstantCommand, Subsystem
-from hal import SerialPort
+from wpilib import SerialPort
 from navx import AHRS
 from ntcore import NetworkTableInstance
 from wpilib import DriverStation, Field2d, RobotBase, SmartDashboard, Timer
@@ -12,7 +12,9 @@ from wpimath.kinematics import ChassisSpeeds, SwerveDrive4Kinematics
 from wpimath.trajectory import TrapezoidProfile
 from wpimath.units import degreesToRadians, feetToMeters, inchesToMeters
 
-from pathplannerlib.auto import AutoBuilder
+from pathplannerlib.auto import AutoBuilder, HolonomicPathFollowerConfig
+from pathplannerlib.config import PIDConstants, ReplanningConfig
+from pathplannerlib.logging import PathPlannerLogging
 
 from subsystems.swerve_module import SwerveModule
 
@@ -27,12 +29,8 @@ class Drivetrain(Subsystem):
             alliance = DriverStation.getAlliance()
             if alliance is not None:
                 return alliance == DriverStation.Alliance.kRed
-            # default is blue, could be better, could be worse.
+            # default is blue, could be better
             return False
-        AutoBuilder.configureHolonomic(
-            self.get_pose, self.reset_pose, self.get_speeds,
-            self.run_chassis_speeds, is_red, self)
-
         # MPS
         self.maxVelocity = feetToMeters(15)
         # RAD / S
@@ -105,12 +103,27 @@ class Drivetrain(Subsystem):
             ),
         )
 
+        AutoBuilder.configureHolonomic(
+            self.get_pose, self.reset_pose, self.get_speeds,
+            self.run_chassis_speeds,
+            HolonomicPathFollowerConfig(
+                PIDConstants(self.x_pid.getP(),
+                             self.x_pid.getI(),
+                             self.x_pid.getD()),
+                PIDConstants(self.t_pid.getP(),
+                             self.t_pid.getI(),
+                             self.t_pid.getD()),
+                feetToMeters(self.maxVelocity),
+                # sqrt((15^2) + (15^2))
+                inchesToMeters(15 * math.sqrt(2)),
+                ReplanningConfig(True, True, 0.75, 0.25)
+
+            ), is_red, self)
+
         self.x_pid.setTolerance(inchesToMeters(3))
         self.y_pid.setTolerance(inchesToMeters(3))
         self.t_pid.setTolerance(degreesToRadians(3))
         self.t_pid.enableContinuousInput(-math.pi, math.pi)
-
-        SmartDashboard.putData("Field", Field2d())
 
         self.__ntTbl__.putNumber("xPID/P", self.x_pid.getP())
         self.__ntTbl__.putNumber("xPID/I", self.x_pid.getI())
@@ -123,6 +136,16 @@ class Drivetrain(Subsystem):
         self.__ntTbl__.putNumber("tPID/P", self.t_pid.getP())
         self.__ntTbl__.putNumber("tPID/I", self.t_pid.getI())
         self.__ntTbl__.putNumber("tPID/D", self.t_pid.getD())
+
+        # setup field display of position and current path
+        self.field = Field2d()
+        self.field.setRobotPose(0, 0, Rotation2d.fromDegrees(0))
+        PathPlannerLogging.setLogActivePathCallback(
+            lambda poses: self.field.getObject("curr_path").setPoses(poses))
+        SmartDashboard.putData("Field", self.field)
+
+        # SmartDashboard.putNumberArray(
+        #     f"Field/{self.robotName}", [poseX, poseY, poseT])
 
     def periodic(self):
         pose = self.odometry.updateWithTime(
@@ -166,6 +189,10 @@ class Drivetrain(Subsystem):
                 "ChassisSpeeds omega (rad/s)", self.chassis_speeds.omega
             )
 
+        # update field with robotpose, path is handled in PathPlannerLib
+        self.field.setRobotPose(pose.X(), pose.Y(), pose.rotation())
+        SmartDashboard.putData("Field", self.field)
+
         poseX = round(pose.X(), 3)
         poseY = round(pose.Y(), 3)
         poseT = round(pose.rotation().degrees(), 3)
@@ -203,9 +230,6 @@ class Drivetrain(Subsystem):
             poseX = feetToMeters(54) - poseX
             poseY = feetToMeters(27) - poseY
             poseT -= 180
-
-        SmartDashboard.putNumberArray(
-            f"Field/{self.robotName}", [poseX, poseY, poseT])
 
     def stop(self) -> None:
         self.run_chassis_speeds(ChassisSpeeds(0, 0, 0))

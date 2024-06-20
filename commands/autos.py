@@ -21,7 +21,8 @@ def _red_pose_convert(pose: Pose2d):
     y = pose.Y()
     t = pose.rotation()
     return Pose2d(
-        feetToMeters(54) - x, feetToMeters(27) - y, Rotation2d.fromDegrees(180) - t
+        feetToMeters(54) - x, feetToMeters(27) -
+        y, Rotation2d.fromDegrees(180) - t
     )
 
 
