@@ -5,9 +5,9 @@ from wpimath.units import feetToMeters
 from wpimath.geometry import Rotation2d, Pose2d
 from commands2.button import Trigger
 from commands2 import SequentialCommandGroup
-from wpilib import DriverStation, SendableChooser, SmartDashboard
+from wpilib import DriverStation, SmartDashboard
 
-from commands.autos import Shoot_Only, Shoot_And_Drive, Nothing
+# from commands.autos import Shoot_Only, Shoot_And_Drive, Nothing
 from commands.drive_angle import DriveAngle
 from commands.drive_joystick import Drive_Joystick
 from commands.drive_translation import DriveTranslation
@@ -24,8 +24,8 @@ from subsystems.interface import Interface
 from subsystems.leds import LEDs
 from subsystems.shooter import Shooter
 
-
-# import commands2.cmd
+from pathplannerlib.auto import AutoBuilder, NamedCommands  # , PathPlannerAuto
+# from pathplannerlib.path import GoalEndState, PathConstraints, PathPlannerPath
 
 
 class RobotContainer:
@@ -41,17 +41,26 @@ class RobotContainer:
         self.configure_bindings()
         self.set_default_commands()
 
-        self.auto_chooser = SendableChooser()
-        self.auto_chooser.addOption("Shoot Only", Shoot_Only)
-        self.auto_chooser.addOption(
-            "Shoot and Drive Left", (Shoot_And_Drive, -1))
-        self.auto_chooser.addOption(
-            "Shoot and Drive Center", (Shoot_And_Drive, 0))
-        self.auto_chooser.addOption(
-            "Shoot and Drive Right", (Shoot_And_Drive, 1))
-        self.auto_chooser.setDefaultOption("None", Nothing)
-
+        # auto go brr
+        NamedCommands.registerCommand("Shoot", Shoot(self.shooter))
+        NamedCommands.registerCommand(
+            "Elevator_Top", Elevator_Top(self.elevator))
+        NamedCommands.registerCommand(
+            "Elevator_Bottom", Elevator_Bottom(self.elevator))
+        NamedCommands.registerCommand(
+            "Intake_Run_In_Fast", Intake_Run(self.intake, 1.0))
+        self.auto_chooser = AutoBuilder.buildAutoChooser()
         SmartDashboard.putData("Auto Mode", self.auto_chooser)
+
+        # self.auto_chooser = SendableChooser()
+        # self.auto_chooser.addOption("Shoot Only", Shoot_Only)
+        # self.auto_chooser.addOption(
+        #     "Shoot and Drive Left", (Shoot_And_Drive, -1))
+        # self.auto_chooser.addOption(
+        #     "Shoot and Drive Center", (Shoot_And_Drive, 0))
+        # self.auto_chooser.addOption(
+        #     "Shoot and Drive Right", (Shoot_And_Drive, 1))
+        # self.auto_chooser.setDefaultOption("None", Nothing)
 
     def teleop_bindings(self) -> None:
         self.drivetrain.setDefaultCommand(
@@ -92,15 +101,18 @@ class RobotContainer:
         self.interface.tmp_rotate_forwards().onTrue(
             DriveAngle(self.drivetrain, Rotation2d.fromDegrees(0))
         )
+
         # rotate to the back
         self.interface.tmp_rotate_backwards().onTrue(
             DriveAngle(self.drivetrain, Rotation2d.fromDegrees(180))
         )
+
         # drive 1 ft forwards
         self.interface.tmp_drive_forwards().onTrue(
             DriveTranslation(self.drivetrain, Pose2d(
                 feetToMeters(5), 0, Rotation2d(0)))
         )
+
         # drive 1 ft backwards
         self.interface.tmp_drive_forwards().onTrue(
             DriveTranslation(
@@ -112,6 +124,7 @@ class RobotContainer:
         self.interface.get_elevator_up().onTrue(
             Elevator_Top(self.elevator)
         )
+
         # move shooter to the bottom
         self.interface.get_elevator_down().onTrue(
             Elevator_Bottom(self.elevator)
@@ -168,46 +181,4 @@ class RobotContainer:
         )
 
     def get_auto_command(self) -> SequentialCommandGroup:
-        # return Drive_Around(self.drivetrain, True)
-        to_run = self.auto_chooser.getSelected()
-        print(to_run)
-        if to_run == Nothing:
-            return Nothing()
-        elif to_run == Shoot_Only:
-            return Shoot_Only(self.elevator, self.intake, self.shooter)
-        elif to_run[1] == -1:
-            # we are on the left from the driver's perspective
-            return Shoot_And_Drive(
-                self.drivetrain,
-                self.elevator,
-                self.intake,
-                self.shooter,
-                Pose2d(
-                    feetToMeters(3),
-                    feetToMeters(41.65 / 12),
-                    Rotation2d.fromDegrees(-135),
-                ),
-            )
-
-        elif to_run[1] == 0:
-            # we are in the center
-            return Shoot_And_Drive(
-                self.drivetrain,
-                self.elevator,
-                self.intake,
-                self.shooter,
-                Pose2d(feetToMeters(3), 0, Rotation2d.fromDegrees(180)),
-            )
-        elif to_run[1] == 1:
-            # we are on the right
-            return Shoot_And_Drive(
-                self.drivetrain,
-                self.elevator,
-                self.intake,
-                self.shooter,
-                Pose2d(
-                    feetToMeters(3),
-                    -feetToMeters(41 / 65 / 12),
-                    Rotation2d.fromDegrees(135),
-                ),
-            )
+        return self.auto_chooser.getSelected()

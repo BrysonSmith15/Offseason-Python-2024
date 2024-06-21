@@ -40,7 +40,7 @@
     },
     "###/SmartDashboard/Auto Mode": {
       "Collapsed": "0",
-      "Pos": "937,1009",
+      "Pos": "665,654",
       "Size": "254,54"
     },
     "###/SmartDashboard/Field": {
@@ -56,22 +56,22 @@
     "###FMS": {
       "Collapsed": "0",
       "Pos": "1,375",
-      "Size": "169,184"
+      "Size": "283,140"
     },
     "###Joysticks": {
       "Collapsed": "0",
-      "Pos": "738,603",
+      "Pos": "999,626",
       "Size": "796,217"
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "1143,46",
+      "Pos": "937,46",
       "Size": "771,719"
     },
     "###NetworkTables Info": {
       "Collapsed": "0",
-      "Pos": "609,348",
-      "Size": "1117,347"
+      "Pos": "609,349",
+      "Size": "1117,346"
     },
     "###Other Devices": {
       "Collapsed": "0",
@@ -85,7 +85,7 @@
     },
     "###System Joysticks": {
       "Collapsed": "0",
-      "Pos": "1359,882",
+      "Pos": "937,882",
       "Size": "192,218"
     },
     "###Timing": {
