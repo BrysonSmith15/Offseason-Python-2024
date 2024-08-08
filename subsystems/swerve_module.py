@@ -233,8 +233,8 @@ class SwerveModule(Subsystem):
         )
 
     def get_state(self) -> SwerveModuleState:
-        SwerveModuleState(feetToMeters(self.drive_velocity),
-                          self.get_turn_angle())
+        return SwerveModuleState(feetToMeters(self.drive_velocity),
+                                 self.get_turn_angle())
 
     def set_drive_idle(self, coast: bool):
         self.drive_motor.setIdleMode(

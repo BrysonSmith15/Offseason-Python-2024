@@ -95,6 +95,9 @@
           "open": true
         }
       },
+      "PathPlanner": {
+        "open": true
+      },
       "Shuffleboard": {
         ".metadata": {
           "open": true
@@ -126,7 +129,8 @@
         "open": true
       },
       "open": true
-    }
+    },
+    "visible": true
   },
   "Plot": {
     "Plot <0>": {
@@ -175,7 +179,10 @@
             }
           ]
         }
-      ]
+      ],
+      "window": {
+        "visible": false
+      }
     }
   }
 }

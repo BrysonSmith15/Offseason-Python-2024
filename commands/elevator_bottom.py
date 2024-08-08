@@ -16,7 +16,7 @@ class Elevator_Bottom(Command):
             self.elevator.set_motors(self.elevator.down_speed)
 
     def isFinished(self) -> bool:
-        return self.elevator.bot_pressed()
+        return self.elevator.bottom_pressed()
 
     def end(self, interrupted: bool):
         self.elevator.set_motors(0)

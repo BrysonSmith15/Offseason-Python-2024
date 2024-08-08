@@ -15,7 +15,7 @@ class Elevator_Manual(Command):
 
     def isFinished(self) -> bool:
         return (self.elevator.top_pressed() and self.power > 0) or (
-            self.elevator.bot_pressed() and self.power < 0
+            self.elevator.bottom_pressed() and self.power < 0
         )
 
     def end(self, interrupted: bool):

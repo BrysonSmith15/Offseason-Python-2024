@@ -26,10 +26,10 @@ class Drivetrain(Subsystem):
         super().__init__()
 
         def is_red() -> bool:
-            alliance = DriverStation.getAlliance()
-            if alliance is not None:
-                return alliance == DriverStation.Alliance.kRed
-            # default is blue, could be better
+            # alliance = DriverStation.getAlliance()
+            # if alliance is not None:
+            #     return alliance == DriverStation.Alliance.kRed
+            # # default is blue, could be better
             return False
         # MPS
         self.maxVelocity = feetToMeters(15)
@@ -114,9 +114,10 @@ class Drivetrain(Subsystem):
                              self.t_pid.getI(),
                              self.t_pid.getD()),
                 feetToMeters(self.maxVelocity),
-                # sqrt((15^2) + (15^2))
+                # 15^2 + 15^2 = d^2
+                # d = sqrt((15^2) + (15^2))
                 inchesToMeters(15 * math.sqrt(2)),
-                ReplanningConfig(True, True, 0.75, 0.25)
+                ReplanningConfig()
 
             ), is_red, self)
 
@@ -160,34 +161,6 @@ class Drivetrain(Subsystem):
         )
         self.__ntTbl__.putString(
             "Running Command", str(self.getCurrentCommand()))
-        if not self.is_real:
-            self.odometry.resetPosition(
-                self.get_angle(),
-                (
-                    self.fl.getPosition(),
-                    self.fr.getPosition(),
-                    self.bl.getPosition(),
-                    self.br.getPosition(),
-                ),
-                Pose2d(
-                    Translation2d(
-                        pose.X() + self.chassis_speeds.vx / 50,
-                        pose.Y() + self.chassis_speeds.vy / 50,
-                    ),
-                    Rotation2d(
-                        pose.rotation().radians() - self.chassis_speeds.omega / 50
-                    ),
-                ),
-            )
-            self.__ntTbl__.putNumber(
-                "ChassisSpeeds vx (fps)", self.chassis_speeds.vx_fps
-            )
-            self.__ntTbl__.putNumber(
-                "ChassisSpeeds vy (fps)", self.chassis_speeds.vy_fps
-            )
-            self.__ntTbl__.putNumber(
-                "ChassisSpeeds omega (rad/s)", self.chassis_speeds.omega
-            )
 
         # update field with robotpose, path is handled in PathPlannerLib
         self.field.setRobotPose(pose.X(), pose.Y(), pose.rotation())
@@ -231,6 +204,94 @@ class Drivetrain(Subsystem):
             poseY = feetToMeters(27) - poseY
             poseT -= 180
 
+    def simulationPeriodic(self):
+        pose = self.odometry.updateWithTime(
+            Timer.getFPGATimestamp(),
+            self.gyro.getRotation2d(),
+            (
+                self.fl.getPosition(),
+                self.fr.getPosition(),
+                self.bl.getPosition(),
+                self.br.getPosition(),
+            ),
+        )
+        self.__ntTbl__.putString(
+            "Running Command", str(self.getCurrentCommand()))
+
+        # update field with robotpose, path is handled in PathPlannerLib
+        self.field.setRobotPose(pose.X(), pose.Y(), pose.rotation())
+        SmartDashboard.putData("Field", self.field)
+
+        self.odometry.resetPosition(
+            self.get_angle(),
+            (
+                self.fl.getPosition(),
+                self.fr.getPosition(),
+                self.bl.getPosition(),
+                self.br.getPosition(),
+            ),
+            Pose2d(
+                Translation2d(
+                    pose.X() + self.chassis_speeds.vx / 50,
+                    pose.Y() + self.chassis_speeds.vy / 50,
+                ),
+                Rotation2d(
+                    pose.rotation().radians() - self.chassis_speeds.omega / 50
+                ),
+            ),
+        )
+        self.__ntTbl__.putNumber(
+            "ChassisSpeeds vx (fps)", self.chassis_speeds.vx_fps
+        )
+        self.__ntTbl__.putNumber(
+            "ChassisSpeeds vy (fps)", self.chassis_speeds.vy_fps
+        )
+        self.__ntTbl__.putNumber(
+            "ChassisSpeeds omega (rad/s)", self.chassis_speeds.omega
+        )
+
+        # update field with robotpose, path is handled in PathPlannerLib
+
+        poseX = round(pose.X(), 3)
+        poseY = round(pose.Y(), 3)
+        poseT = round(pose.rotation().degrees(), 3)
+
+        if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
+            poseX = feetToMeters(54) - poseX
+            poseY = feetToMeters(27) - poseY
+            poseT -= 180
+
+        self.field.setRobotPose(pose.X(), pose.Y(), pose.rotation())
+        SmartDashboard.putData("Field", self.field)
+        self.__ntTbl__.putNumber("PositionX", poseX)
+        self.__ntTbl__.putNumber("PositionY", poseY)
+        self.__ntTbl__.putNumber("Rotation", poseT)
+
+        x_p = self.__ntTbl__.getNumber("xPID/P", self.x_pid.getP())
+        x_i = self.__ntTbl__.getNumber("xPID/I", self.x_pid.getI())
+        x_d = self.__ntTbl__.getNumber("xPID/D", self.x_pid.getD())
+        self.__ntTbl__.putNumber("xPID/Error", self.x_pid.getPositionError())
+        self.__ntTbl__.putNumber(
+            "xPID/Setpoint", self.x_pid.getSetpoint().position)
+
+        y_p = self.__ntTbl__.getNumber("yPID/P", self.y_pid.getP())
+        y_i = self.__ntTbl__.getNumber("yPID/I", self.y_pid.getI())
+        y_d = self.__ntTbl__.getNumber("yPID/D", self.y_pid.getD())
+        self.__ntTbl__.putNumber("yPID/Error", self.y_pid.getPositionError())
+        self.__ntTbl__.putNumber(
+            "yPID/Setpoint", self.y_pid.getSetpoint().position)
+
+        t_p = self.__ntTbl__.getNumber("tPID/P", self.t_pid.getP())
+        t_i = self.__ntTbl__.getNumber("tPID/I", self.t_pid.getI())
+        t_d = self.__ntTbl__.getNumber("tPID/D", self.t_pid.getD())
+        self.__ntTbl__.putNumber("tPID/Error", self.t_pid.getPositionError())
+        self.__ntTbl__.putNumber(
+            "tPID/Setpoint", self.t_pid.getSetpoint().position)
+
+        self.x_pid.setPID(x_p, x_i, x_d)
+        self.y_pid.setPID(y_p, y_i, y_d)
+        self.t_pid.setPID(t_p, t_i, t_d)
+
     def stop(self) -> None:
         self.run_chassis_speeds(ChassisSpeeds(0, 0, 0))
 
@@ -253,7 +314,7 @@ class Drivetrain(Subsystem):
     def get_angle(self) -> Rotation2d:
         if self.is_real:
             return self.get_pose().rotation()
-        return self.gyro.getRotation2d() + Rotation2d.fromDegrees(180)
+        return self.gyro.getRotation2d()  # + Rotation2d.fromDegrees(180)
 
     def get_module_positions(self):
         return (
@@ -264,7 +325,7 @@ class Drivetrain(Subsystem):
         )
 
     def get_speeds(self) -> ChassisSpeeds:
-        self.kinematics.toChassisSpeeds(
+        return self.kinematics.toChassisSpeeds(
             (self.fl.get_state(), self.fr.get_state(),
              self.bl.get_state(), self.br.get_state()))
 
