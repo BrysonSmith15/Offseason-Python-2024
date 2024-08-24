@@ -12,8 +12,6 @@ from commands.drive_angle import DriveAngle
 from commands.drive_joystick import Drive_Joystick
 from commands.drive_translation import DriveTranslation
 from commands.shoot import Shoot
-from commands.elevator_top import Elevator_Top
-from commands.elevator_bottom import Elevator_Bottom
 from commands.led_chase import LED_Chase
 from commands.intake_run import Intake_Run
 
@@ -44,9 +42,9 @@ class RobotContainer:
         # auto go brr
         NamedCommands.registerCommand("Shoot", Shoot(self.shooter))
         NamedCommands.registerCommand(
-            "Elevator_Top", Elevator_Top(self.elevator))
+            "Elevator_Top", self.elevator.to_top())
         NamedCommands.registerCommand(
-            "Elevator_Bottom", Elevator_Bottom(self.elevator))
+            "Elevator_Bottom", self.elevator.to_bottom())
         NamedCommands.registerCommand(
             "Intake_Run_In_Fast", Intake_Run(self.intake, 1.0))
         self.auto_chooser = AutoBuilder.buildAutoChooser()
