@@ -75,12 +75,6 @@ class RobotContainer:
             )
         )
 
-    def set_default_commands(self) -> None:
-        self.leds.setDefaultCommand(
-            LED_Chase(self.leds, (255, 255, 255), (255, 50, 0), 40)
-        )
-
-    def configure_bindings(self) -> None:
         # go really fast to fight and play defense
         self.interface.get_drive_defense_mode().onTrue(
             self.drivetrain.set_max_speed_command(
@@ -122,12 +116,12 @@ class RobotContainer:
 
         # move shooter to the top
         self.interface.get_elevator_up().onTrue(
-            Elevator_Top(self.elevator)
+            self.elevator.to_top()
         )
 
         # move shooter to the bottom
         self.interface.get_elevator_down().onTrue(
-            Elevator_Bottom(self.elevator)
+            self.elevator.to_bottom()
         )
 
         # run intake slowly
@@ -146,6 +140,12 @@ class RobotContainer:
         # make shooter go full speed
         self.interface.get_spin_shooter().whileTrue(Shoot(self.shooter))
 
+    def set_default_commands(self) -> None:
+        self.leds.setDefaultCommand(
+            LED_Chase(self.leds, (255, 255, 255), (255, 50, 0), 40)
+        )
+
+    def configure_bindings(self) -> None:
         # field based triggers
         # formatter kind of makes this disgusting to read
         # basically, red and white when red

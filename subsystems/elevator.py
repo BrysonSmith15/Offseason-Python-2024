@@ -74,12 +74,11 @@ class Elevator(Subsystem):
         return self.bot_limit.get()
 
     def set_motors(self, power: float) -> None:
-        power = power
         if (
-            False
-            # (power > 0 and self.top_pressed())
-            # or (power < 0 and self.bottom_pressed())
-            # or power == 0
+            RobotBase.isReal() and
+            ((power > 0 and self.top_pressed())
+             or (power < 0 and self.bottom_pressed())
+             or power == 0)
         ):
             power = 0
         else:
@@ -128,6 +127,30 @@ class Elevator(Subsystem):
                 self.down_speed),
             onEnd=lambda _interrupted: self.set_motors(0),
             isFinished=end_condition
+        )
+        out.addRequirements(self)
+        return out
+
+    def manual_control(
+        self, *,
+        speed_control: typing.Callable[[], float],
+        top_condition: typing.Callable[[], bool] = top_pressed,
+        bottom_condition: typing.Callable[[], bool] = bottom_pressed,
+    ) -> FunctionalCommand:
+        assert callable(top_condition)
+        assert callable(bottom_condition)
+        assert callable(speed_control)
+
+        out = FunctionalCommand(
+            onInit=lambda: self.set_motors(0),
+            onExecute=lambda: self.set_motors(speed_control() if not (
+                top_condition() and speed_control() >= 0
+            ) or (
+                bottom_condition() and speed_control() <= 0) else 0
+            ),
+            onEnd=lambda _interrupted: self.set_motors(0),
+            isFinished=lambda: (top_condition() and speed_control() >= 0) or (
+                bottom_condition() and speed_control() <= 0)
         )
         out.addRequirements(self)
         return out
