@@ -27,5 +27,3 @@ def test():
     assert my_intake.curr_speed == -0.25
     my_intake.stop().execute()
     assert my_intake.curr_speed == 0
-
-    assert False
