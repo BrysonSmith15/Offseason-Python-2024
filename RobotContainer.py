@@ -11,9 +11,7 @@ from wpilib import DriverStation, SmartDashboard
 from commands.drive_angle import DriveAngle
 from commands.drive_joystick import Drive_Joystick
 from commands.drive_translation import DriveTranslation
-from commands.shoot import Shoot
 from commands.led_chase import LED_Chase
-from commands.intake_run import Intake_Run
 
 from subsystems.drivetrain import Drivetrain
 from subsystems.elevator import Elevator
@@ -40,13 +38,13 @@ class RobotContainer:
         self.set_default_commands()
 
         # auto go brr
-        NamedCommands.registerCommand("Shoot", Shoot(self.shooter))
+        NamedCommands.registerCommand("Shoot", self.shooter.shoot())
         NamedCommands.registerCommand(
             "Elevator_Top", self.elevator.to_top())
         NamedCommands.registerCommand(
             "Elevator_Bottom", self.elevator.to_bottom())
         NamedCommands.registerCommand(
-            "Intake_Run_In_Fast", Intake_Run(self.intake, 1.0))
+            "Intake_Run_In_Fast", self.intake.full_intake())
         self.auto_chooser = AutoBuilder.buildAutoChooser()
         SmartDashboard.putData("Auto Mode", self.auto_chooser)
 

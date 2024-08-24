@@ -1,4 +1,4 @@
-from commands2 import Subsystem, FunctionalCommand, InterruptionBehavior
+from commands2 import Subsystem, FunctionalCommand, InterruptionBehavior, InstantCommand
 from rev import CANSparkLowLevel, CANSparkMax
 from wpimath.filter import SlewRateLimiter
 from wpilib import RobotBase
@@ -34,9 +34,12 @@ class Intake(Subsystem):
         self.curr_speed = power
 
     def run_motor(
-        self, * speed: typing.Callable[[], float],
+        self, *,
+        speed: typing.Callable[[], float],
         can_run=lambda: True
     ) -> FunctionalCommand:
+        assert callable(speed)
+        assert callable(can_run)
         out = FunctionalCommand(
             onInit=lambda: self.set_motor(0),
             onExecute=lambda: self.set_motor(speed() if can_run() else 0),
@@ -55,5 +58,15 @@ class Intake(Subsystem):
     def reverse_intake(self) -> FunctionalCommand:
         return self.run_motor(speed=lambda: -0.25)
 
-    def stop(self) -> None:
-        self.motor.set(0)
+    def stop(self) -> FunctionalCommand:
+        out = FunctionalCommand(
+            onInit=self._stop,
+            onExecute=self._stop,
+            isFinished=lambda: self.curr_speed == 0,
+            onEnd=self._stop,
+        )
+        out.addRequirements(self)
+        return out
+
+    def _stop(self) -> None:
+        self.set_motor(0)
