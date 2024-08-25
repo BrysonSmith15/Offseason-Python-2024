@@ -10,9 +10,7 @@ class Elevator(Subsystem):
     def __init__(self):
         super().__init__()
         self.setName("Elevator")
-        self.network_table = NetworkTableInstance.getDefault().getTable(
-            "Elevator"
-        )
+        self.network_table = NetworkTableInstance.getDefault().getTable("Elevator")
 
         self.up_speed = 0.45
         self.down_speed = 0.0
@@ -43,21 +41,11 @@ class Elevator(Subsystem):
 
         motors = [self.motor_l1, self.motor_l2, self.motor_r1, self.motor_r2]
         for motor in motors:
-            motor.setPeriodicFramePeriod(
-                CANSparkLowLevel.PeriodicFrame.kStatus2, 500
-            )
-            motor.setPeriodicFramePeriod(
-                CANSparkLowLevel.PeriodicFrame.kStatus3, 500
-            )
-            motor.setPeriodicFramePeriod(
-                CANSparkLowLevel.PeriodicFrame.kStatus4, 500
-            )
-            motor.setPeriodicFramePeriod(
-                CANSparkLowLevel.PeriodicFrame.kStatus5, 500
-            )
-            motor.setPeriodicFramePeriod(
-                CANSparkLowLevel.PeriodicFrame.kStatus6, 500
-            )
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 500)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 500)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 500)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 500)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 500)
             motor.setInverted(True)
 
         self.encoder.setReverseDirection(True)
@@ -91,9 +79,7 @@ class Elevator(Subsystem):
         self,
         *,
         end_condition: typing.Callable[[], bool] = top_pressed,
-        soft_condition: typing.Callable[
-            [], bool
-        ] = lambda self: self.get_ticks()
+        soft_condition: typing.Callable[[], bool] = lambda self: self.get_ticks()
         < self.stable_ticks,
     ) -> FunctionalCommand:
         assert callable(end_condition)
@@ -103,11 +89,7 @@ class Elevator(Subsystem):
             onExecute=lambda: self.set_motors(
                 0
                 if end_condition()
-                else (
-                    self.up_speed / 4
-                    if soft_condition(self)
-                    else self.up_speed
-                )
+                else (self.up_speed / 4 if soft_condition(self) else self.up_speed)
             ),
             onEnd=lambda _interrupted: self.set_motors(0),
             isFinished=end_condition,
@@ -119,9 +101,7 @@ class Elevator(Subsystem):
         self,
         *,
         end_condition: typing.Callable[[], bool] = bottom_pressed,
-        soft_condition: typing.Callable[
-            [], bool
-        ] = lambda self: self.get_ticks()
+        soft_condition: typing.Callable[[], bool] = lambda self: self.get_ticks()
         < self.stable_ticks,
     ) -> FunctionalCommand:
         assert callable(end_condition)
@@ -132,11 +112,7 @@ class Elevator(Subsystem):
             onExecute=lambda: self.set_motors(
                 0
                 if end_condition()
-                else (
-                    self.soft_down_speed
-                    if soft_condition(self)
-                    else self.down_speed
-                )
+                else (self.soft_down_speed if soft_condition(self) else self.down_speed)
             ),
             onEnd=lambda _interrupted: self.set_motors(0),
             isFinished=end_condition,
@@ -176,9 +152,7 @@ class Elevator(Subsystem):
         self.network_table.putNumber("Encoder Ticks", self.get_ticks())
         self.network_table.putNumber("Speed", self.motor_l1.get())
         self.up_speed = self.network_table.getNumber("Up Speed", self.up_speed)
-        self.down_speed = self.network_table.getNumber(
-            "Down Speed", self.down_speed
-        )
+        self.down_speed = self.network_table.getNumber("Down Speed", self.down_speed)
         self.soft_down_speed = self.network_table.getNumber(
             "Soft Down Speed", self.soft_down_speed
         )

@@ -21,6 +21,7 @@ from subsystems.leds import LEDs
 from subsystems.shooter import Shooter
 
 from pathplannerlib.auto import AutoBuilder, NamedCommands  # , PathPlannerAuto
+
 # from pathplannerlib.path import GoalEndState, PathConstraints, PathPlannerPath
 
 
@@ -39,12 +40,9 @@ class RobotContainer:
 
         # auto go brr
         NamedCommands.registerCommand("Shoot", self.shooter.shoot())
-        NamedCommands.registerCommand(
-            "Elevator_Top", self.elevator.to_top())
-        NamedCommands.registerCommand(
-            "Elevator_Bottom", self.elevator.to_bottom())
-        NamedCommands.registerCommand(
-            "Intake_Run_In_Fast", self.intake.full_intake())
+        NamedCommands.registerCommand("Elevator_Top", self.elevator.to_top())
+        NamedCommands.registerCommand("Elevator_Bottom", self.elevator.to_bottom())
+        NamedCommands.registerCommand("Intake_Run_In_Fast", self.intake.full_intake())
         self.auto_chooser = AutoBuilder.buildAutoChooser()
         SmartDashboard.putData("Auto Mode", self.auto_chooser)
 
@@ -99,8 +97,7 @@ class RobotContainer:
 
         # drive 1 ft forwards
         self.interface.tmp_drive_forwards().onTrue(
-            DriveTranslation(self.drivetrain, Pose2d(
-                feetToMeters(5), 0, Rotation2d(0)))
+            DriveTranslation(self.drivetrain, Pose2d(feetToMeters(5), 0, Rotation2d(0)))
         )
 
         # drive 1 ft backwards
@@ -111,27 +108,17 @@ class RobotContainer:
         )
 
         # move shooter to the top
-        self.interface.get_elevator_up().onTrue(
-            self.elevator.to_top()
-        )
+        self.interface.get_elevator_up().onTrue(self.elevator.to_top())
 
         # move shooter to the bottom
-        self.interface.get_elevator_down().onTrue(
-            self.elevator.to_bottom()
-        )
+        self.interface.get_elevator_down().onTrue(self.elevator.to_bottom())
 
         # run intake slowly
-        self.interface.get_intake_forward().whileTrue(
-            Intake_Run(self.intake, 0.25)
-        )
+        self.interface.get_intake_forward().whileTrue(Intake_Run(self.intake, 0.25))
         # run intake full forward
-        self.interface.get_intake_full().whileTrue(
-            Intake_Run(self.intake, 1.0)
-        )
+        self.interface.get_intake_full().whileTrue(Intake_Run(self.intake, 1.0))
         # run intake reverse slowly
-        self.interface.get_intake_reverse().whileTrue(
-            Intake_Run(self.intake, -0.25)
-        )
+        self.interface.get_intake_reverse().whileTrue(Intake_Run(self.intake, -0.25))
 
         # make shooter go full speed
         self.interface.get_spin_shooter().whileTrue(Shoot(self.shooter))

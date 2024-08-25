@@ -50,10 +50,8 @@ class SwerveModule(Subsystem):
         )
 
         self.cancoder = CANcoder(encoder_id)
-        self.turn_motor = CANSparkMax(
-            turn_id, CANSparkLowLevel.MotorType.kBrushless)
-        self.drive_motor = CANSparkMax(
-            drive_id, CANSparkLowLevel.MotorType.kBrushless)
+        self.turn_motor = CANSparkMax(turn_id, CANSparkLowLevel.MotorType.kBrushless)
+        self.drive_motor = CANSparkMax(drive_id, CANSparkLowLevel.MotorType.kBrushless)
 
         self.cancoder.set_position(self.cancoder.get_absolute_position().value)
 
@@ -233,8 +231,9 @@ class SwerveModule(Subsystem):
         )
 
     def get_state(self) -> SwerveModuleState:
-        return SwerveModuleState(feetToMeters(self.drive_velocity),
-                                 self.get_turn_angle())
+        return SwerveModuleState(
+            feetToMeters(self.drive_velocity), self.get_turn_angle()
+        )
 
     def set_drive_idle(self, coast: bool):
         self.drive_motor.setIdleMode(

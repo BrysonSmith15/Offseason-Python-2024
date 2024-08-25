@@ -9,8 +9,7 @@ from subsystems.drivetrain import Drivetrain
 class DriveTranslation(Command):
     def __init__(self, drivetrain: Drivetrain, offset: Pose2d):
         super().__init__()
-        self.net_table = NetworkTableInstance \
-            .getDefault().getTable("DriveTranslation")
+        self.net_table = NetworkTableInstance.getDefault().getTable("DriveTranslation")
         self.drivetrain = drivetrain
         self.offset = offset
         self.addRequirements(drivetrain)

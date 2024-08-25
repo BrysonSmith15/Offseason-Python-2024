@@ -15,16 +15,11 @@ class Intake(Subsystem):
 
         self.curr_speed: float = 0
 
-        self.motor.setPeriodicFramePeriod(
-            CANSparkLowLevel.PeriodicFrame.kStatus2, 500)
-        self.motor.setPeriodicFramePeriod(
-            CANSparkLowLevel.PeriodicFrame.kStatus3, 500)
-        self.motor.setPeriodicFramePeriod(
-            CANSparkLowLevel.PeriodicFrame.kStatus4, 500)
-        self.motor.setPeriodicFramePeriod(
-            CANSparkLowLevel.PeriodicFrame.kStatus5, 500)
-        self.motor.setPeriodicFramePeriod(
-            CANSparkLowLevel.PeriodicFrame.kStatus6, 500)
+        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 500)
+        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 500)
+        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 500)
+        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 500)
+        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 500)
 
     def set_motor(self, power: float) -> None:
         power = 1 if power > 1 else -1 if power < -1 else power
@@ -34,9 +29,7 @@ class Intake(Subsystem):
         self.curr_speed = power
 
     def run_motor(
-        self, *,
-        speed: typing.Callable[[], float],
-        can_run=lambda: True
+        self, *, speed: typing.Callable[[], float], can_run=lambda: True
     ) -> FunctionalCommand:
         assert callable(speed)
         assert callable(can_run)

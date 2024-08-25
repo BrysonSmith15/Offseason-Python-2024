@@ -24,16 +24,11 @@ class Shooter(Subsystem):
         # self.motor_r2.follow(self.motor_l1, True)
 
         for motor in [self.motor_l1, self.motor_r1]:
-            motor.setPeriodicFramePeriod(
-                CANSparkLowLevel.PeriodicFrame.kStatus2, 100)
-            motor.setPeriodicFramePeriod(
-                CANSparkLowLevel.PeriodicFrame.kStatus3, 100)
-            motor.setPeriodicFramePeriod(
-                CANSparkLowLevel.PeriodicFrame.kStatus4, 100)
-            motor.setPeriodicFramePeriod(
-                CANSparkLowLevel.PeriodicFrame.kStatus5, 100)
-            motor.setPeriodicFramePeriod(
-                CANSparkLowLevel.PeriodicFrame.kStatus6, 100)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 100)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 100)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 100)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 100)
+            motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 100)
 
     def set_motors(self, power: float) -> None:
         power = 1 if power > 1 else -1 if power < -1 else power
@@ -42,14 +37,14 @@ class Shooter(Subsystem):
         self.motor_l1.set(power)
         self.curr_speed = power
 
-    def shoot(self,
-              power: typing.Callable[[], float] = lambda: 1.0
-              ) -> FunctionalCommand:
+    def shoot(
+        self, power: typing.Callable[[], float] = lambda: 1.0
+    ) -> FunctionalCommand:
         out = FunctionalCommand(
             onInit=lambda: self.set_motors(0),
             onExecute=lambda: self.set_motors(power()),
             isFinished=lambda: False,
-            onEnd=self.stop
+            onEnd=self.stop,
         )
         out.addRequirements(self)
         return out

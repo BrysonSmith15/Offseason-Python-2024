@@ -125,16 +125,14 @@ class Interface:
 
     def get_drive_field_oriented(self) -> Trigger:
         return (
-            Trigger(lambda: self.driver_controller.getRawAxis(
-                self.rt_axis) > 0.25)
+            Trigger(lambda: self.driver_controller.getRawAxis(self.rt_axis) > 0.25)
             if self.driver_controller
             else Trigger(lambda: False)
         )
 
     def get_drive_holonomic(self) -> Trigger:
         return (
-            Trigger(lambda: self.driver_controller.getRawAxis(
-                self.lt_axis) > 0.25)
+            Trigger(lambda: self.driver_controller.getRawAxis(self.lt_axis) > 0.25)
             if self.driver_controller
             else Trigger(lambda: False)
         )
@@ -214,8 +212,7 @@ class Interface:
     def get_spin_shooter(self) -> Trigger:
         if self.operator_controller:
             return Trigger(
-                lambda: self.operator_controller.getRawAxis(
-                    self.rt_axis) > 0.15
+                lambda: self.operator_controller.getRawAxis(self.rt_axis) > 0.15
             )
         else:
             return (
@@ -227,8 +224,7 @@ class Interface:
     def get_intake_full(self) -> Trigger:
         if self.operator_controller:
             return Trigger(
-                lambda: self.operator_controller.getRawAxis(
-                    self.rt_axis) > 0.85
+                lambda: self.operator_controller.getRawAxis(self.rt_axis) > 0.85
             )
         else:
             return (
