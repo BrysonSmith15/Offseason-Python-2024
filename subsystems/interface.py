@@ -17,19 +17,6 @@ class Interface:
         self.driver_controller = CommandJoystick(0)
         self.operator_controller = CommandJoystick(1)
 
-        if not self.operator_controller.getHID().isConnected():
-            self.operator_controller = None
-
-        try:
-            if not self.driver_controller.getHID().isConnected():
-                if self.operator_controller.getHID().isConnected():
-                    self.driver_controller = self.operator_controller
-                else:
-                    print("No driver Controller")
-                    exit(0)
-        except Exception:
-            pass
-
         self.a_button = 1
         self.b_button = 2
         self.x_button = 3
@@ -45,23 +32,11 @@ class Interface:
         self.lx_axis = 0
         self.ly_axis = 1
         self.lt_axis = 2
-        self.rx_axis = 3
-        self.ry_axis = 4
-        self.rt_axis = 5
+        self.rt_axis = 3
+        self.rx_axis = 4
+        self.ry_axis = 5
 
         self.deadband = 0.1
-
-    def periodic(self):
-        if not self.driver_controller:
-            try:
-                self.driver_controller = CommandJoystick(0)
-            except Exception:
-                print("Still no driver controller")
-        if not self.operator_controller:
-            try:
-                self.operator_controller = CommandJoystick(1)
-            except Exception:
-                print("Still no operator controller")
 
     def tmp_rotate_forwards(self) -> Trigger:
         # if self.operator_controller:

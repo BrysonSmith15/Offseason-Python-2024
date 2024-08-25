@@ -1,4 +1,4 @@
-from commands2 import Subsystem, FunctionalCommand, InstantCommand
+from commands2 import Subsystem, FunctionalCommand
 from rev import CANSparkLowLevel, CANSparkMax
 from wpimath.filter import SlewRateLimiter
 from wpilib import RobotBase
@@ -54,7 +54,7 @@ class Shooter(Subsystem):
             onInit=lambda: self.set_motors(0),
             onExecute=lambda: self.set_motors(power()),
             isFinished=lambda: False,
-            onEnd=self.stop,
+            onEnd=lambda _interrupted: self.stop(),
         )
         out.addRequirements(self)
         return out

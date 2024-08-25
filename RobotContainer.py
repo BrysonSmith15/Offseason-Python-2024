@@ -90,13 +90,13 @@ class RobotContainer:
 
         # test drive positions
         # rotate to the front
-        self.interface.tmp_rotate_forwards().onTrue(
-            DriveAngle(self.drivetrain, Rotation2d.fromDegrees(0))
+        self.interface.tmp_rotate_forwards().whileTrue(
+            self.drivetrain.drive_angle(Rotation2d.fromDegrees(0))
         )
 
         # rotate to the back
-        self.interface.tmp_rotate_backwards().onTrue(
-            DriveAngle(self.drivetrain, Rotation2d.fromDegrees(180))
+        self.interface.tmp_rotate_backwards().whileTrue(
+            self.drivetrain.drive_angle(Rotation2d.fromDegrees(178))
         )
 
         # drive 1 ft forwards
@@ -121,19 +121,21 @@ class RobotContainer:
 
         # run intake slowly
         self.interface.get_intake_forward().whileTrue(
-            Intake_Run(self.intake, 0.25)
+            self.intake.slow_intake()
         )
         # run intake full forward
         self.interface.get_intake_full().whileTrue(
-            Intake_Run(self.intake, 1.0)
+            self.intake.full_intake()
         )
         # run intake reverse slowly
         self.interface.get_intake_reverse().whileTrue(
-            Intake_Run(self.intake, -0.25)
+            self.intake.reverse_intake()
         )
 
         # make shooter go full speed
-        self.interface.get_spin_shooter().whileTrue(Shoot(self.shooter))
+        self.interface.get_spin_shooter().whileTrue(
+            self.shooter.shoot(lambda: 1.0)
+        )
 
     def set_default_commands(self) -> None:
         self.leds.setDefaultCommand(

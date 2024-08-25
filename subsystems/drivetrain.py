@@ -1,6 +1,6 @@
 import math
 
-from commands2 import InstantCommand, Subsystem
+from commands2 import InstantCommand, Subsystem, FunctionalCommand
 from wpilib import SerialPort
 from navx import AHRS
 from ntcore import NetworkTableInstance
@@ -17,6 +17,8 @@ from pathplannerlib.config import PIDConstants, ReplanningConfig
 from pathplannerlib.logging import PathPlannerLogging
 
 from subsystems.swerve_module import SwerveModule
+
+from utils.nt_tunable import Tunable
 
 
 class Drivetrain(Subsystem):
@@ -132,6 +134,32 @@ class Drivetrain(Subsystem):
         self.t_pid.setTolerance(degreesToRadians(3))
         self.t_pid.enableContinuousInput(-math.pi, math.pi)
 
+        self._xPIDp_listener = Tunable(
+            float, self.__ntTbl__, "xPID/P", self.x_pid.getP(),
+            lambda val: self.x_pid.setP(val)
+        )
+        self._xPIDi_listener = Tunable(
+            float, self.__ntTbl__, "xPID/I", self.x_pid.getI(),
+            lambda val: self.x_pid.setI(val)
+        )
+        self._xPIDd_listener = Tunable(
+            float, self.__ntTbl__, "xPID/D", self.x_pid.getD(),
+            lambda val: self.x_pid.setD(val)
+        )
+
+        self._yPIDp_listener = Tunable(
+            float, self.__ntTbl__, "yPID/P", self.y_pid.getP(),
+            lambda val: self.y_pid.setP(val)
+        )
+        self._yPIDi_listener = Tunable(
+            float, self.__ntTbl__, "yPID/I", self.y_pid.getI(),
+            lambda val: self.y_pid.setI(val)
+        )
+        self._yPIDd_listener = Tunable(
+            float, self.__ntTbl__, "yPID/D", self.y_pid.getD(),
+            lambda val: self.y_pid.setD(val)
+        )
+
         self.__ntTbl__.putNumber("xPID/P", self.x_pid.getP())
         self.__ntTbl__.putNumber("xPID/I", self.x_pid.getI())
         self.__ntTbl__.putNumber("xPID/D", self.x_pid.getD())
@@ -181,44 +209,45 @@ class Drivetrain(Subsystem):
         self.__ntTbl__.putNumber("PositionX", poseX)
         self.__ntTbl__.putNumber("PositionY", poseY)
         self.__ntTbl__.putNumber("Rotation", poseT)
+        #
+        # x_p = self.__ntTbl__.getNumber("xPID/P", self.x_pid.getP())
+        # x_i = self.__ntTbl__.getNumber("xPID/I", self.x_pid.getI())
+        # x_d = self.__ntTbl__.getNumber("xPID/D", self.x_pid.getD())
+        # self.__ntTbl__.putNumber("xPID/Error", self.x_pid.getPositionError())
+        # self.__ntTbl__.putNumber(
+        #     "xPID/Setpoint", self.x_pid.getSetpoint().position
+        # )
+        #
+        # y_p = self.__ntTbl__.getNumber("yPID/P", self.y_pid.getP())
+        # y_i = self.__ntTbl__.getNumber("yPID/I", self.y_pid.getI())
+        # y_d = self.__ntTbl__.getNumber("yPID/D", self.y_pid.getD())
+        # self.__ntTbl__.putNumber("yPID/Error", self.y_pid.getPositionError())
+        # self.__ntTbl__.putNumber(
+        #     "yPID/Setpoint", self.y_pid.getSetpoint().position
+        # )
+        #
+        # t_p = self.__ntTbl__.getNumber("tPID/P", self.t_pid.getP())
+        # t_i = self.__ntTbl__.getNumber("tPID/I", self.t_pid.getI())
+        # t_d = self.__ntTbl__.getNumber("tPID/D", self.t_pid.getD())
+        # self.__ntTbl__.putNumber("tPID/Error", self.t_pid.getPositionError())
+        # self.__ntTbl__.putNumber(
+        #     "tPID/Setpoint", self.t_pid.getSetpoint().position
+        # )
+        #
+        # self.x_pid.setPID(x_p, x_i, x_d)
+        # self.y_pid.setPID(y_p, y_i, y_d)
+        # self.t_pid.setPID(t_p, t_i, t_d)
+        #
 
-        x_p = self.__ntTbl__.getNumber("xPID/P", self.x_pid.getP())
-        x_i = self.__ntTbl__.getNumber("xPID/I", self.x_pid.getI())
-        x_d = self.__ntTbl__.getNumber("xPID/D", self.x_pid.getD())
-        self.__ntTbl__.putNumber("xPID/Error", self.x_pid.getPositionError())
-        self.__ntTbl__.putNumber(
-            "xPID/Setpoint", self.x_pid.getSetpoint().position
-        )
-
-        y_p = self.__ntTbl__.getNumber("yPID/P", self.y_pid.getP())
-        y_i = self.__ntTbl__.getNumber("yPID/I", self.y_pid.getI())
-        y_d = self.__ntTbl__.getNumber("yPID/D", self.y_pid.getD())
-        self.__ntTbl__.putNumber("yPID/Error", self.y_pid.getPositionError())
-        self.__ntTbl__.putNumber(
-            "yPID/Setpoint", self.y_pid.getSetpoint().position
-        )
-
-        t_p = self.__ntTbl__.getNumber("tPID/P", self.t_pid.getP())
-        t_i = self.__ntTbl__.getNumber("tPID/I", self.t_pid.getI())
-        t_d = self.__ntTbl__.getNumber("tPID/D", self.t_pid.getD())
-        self.__ntTbl__.putNumber("tPID/Error", self.t_pid.getPositionError())
-        self.__ntTbl__.putNumber(
-            "tPID/Setpoint", self.t_pid.getSetpoint().position
-        )
-
-        self.x_pid.setPID(x_p, x_i, x_d)
-        self.y_pid.setPID(y_p, y_i, y_d)
-        self.t_pid.setPID(t_p, t_i, t_d)
-
-        if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
-            poseX = feetToMeters(54) - poseX
-            poseY = feetToMeters(27) - poseY
-            poseT -= 180
+        # if DriverStation.getAlliance() == DriverStation.Alliance.kRed:
+        #     poseX = feetToMeters(54) - poseX
+        #     poseY = feetToMeters(27) - poseY
+        #     poseT -= 180
 
     def simulationPeriodic(self):
         pose = self.odometry.updateWithTime(
             Timer.getFPGATimestamp(),
-            self.gyro.getRotation2d(),
+            self.get_angle(),
             (
                 self.fl.getPosition(),
                 self.fr.getPosition(),
@@ -275,37 +304,37 @@ class Drivetrain(Subsystem):
 
         self.field.setRobotPose(pose.X(), pose.Y(), pose.rotation())
         SmartDashboard.putData("Field", self.field)
-        self.__ntTbl__.putNumber("PositionX", poseX)
-        self.__ntTbl__.putNumber("PositionY", poseY)
-        self.__ntTbl__.putNumber("Rotation", poseT)
-
-        x_p = self.__ntTbl__.getNumber("xPID/P", self.x_pid.getP())
-        x_i = self.__ntTbl__.getNumber("xPID/I", self.x_pid.getI())
-        x_d = self.__ntTbl__.getNumber("xPID/D", self.x_pid.getD())
-        self.__ntTbl__.putNumber("xPID/Error", self.x_pid.getPositionError())
-        self.__ntTbl__.putNumber(
-            "xPID/Setpoint", self.x_pid.getSetpoint().position
-        )
-
-        y_p = self.__ntTbl__.getNumber("yPID/P", self.y_pid.getP())
-        y_i = self.__ntTbl__.getNumber("yPID/I", self.y_pid.getI())
-        y_d = self.__ntTbl__.getNumber("yPID/D", self.y_pid.getD())
-        self.__ntTbl__.putNumber("yPID/Error", self.y_pid.getPositionError())
-        self.__ntTbl__.putNumber(
-            "yPID/Setpoint", self.y_pid.getSetpoint().position
-        )
-
-        t_p = self.__ntTbl__.getNumber("tPID/P", self.t_pid.getP())
-        t_i = self.__ntTbl__.getNumber("tPID/I", self.t_pid.getI())
-        t_d = self.__ntTbl__.getNumber("tPID/D", self.t_pid.getD())
-        self.__ntTbl__.putNumber("tPID/Error", self.t_pid.getPositionError())
-        self.__ntTbl__.putNumber(
-            "tPID/Setpoint", self.t_pid.getSetpoint().position
-        )
-
-        self.x_pid.setPID(x_p, x_i, x_d)
-        self.y_pid.setPID(y_p, y_i, y_d)
-        self.t_pid.setPID(t_p, t_i, t_d)
+        # self.__ntTbl__.putNumber("PositionX", poseX)
+        # self.__ntTbl__.putNumber("PositionY", poseY)
+        # self.__ntTbl__.putNumber("Rotation", poseT)
+        #
+        # x_p = self.__ntTbl__.getNumber("xPID/P", self.x_pid.getP())
+        # x_i = self.__ntTbl__.getNumber("xPID/I", self.x_pid.getI())
+        # x_d = self.__ntTbl__.getNumber("xPID/D", self.x_pid.getD())
+        # self.__ntTbl__.putNumber("xPID/Error", self.x_pid.getPositionError())
+        # self.__ntTbl__.putNumber(
+        #     "xPID/Setpoint", self.x_pid.getSetpoint().position
+        # )
+        #
+        # y_p = self.__ntTbl__.getNumber("yPID/P", self.y_pid.getP())
+        # y_i = self.__ntTbl__.getNumber("yPID/I", self.y_pid.getI())
+        # y_d = self.__ntTbl__.getNumber("yPID/D", self.y_pid.getD())
+        # self.__ntTbl__.putNumber("yPID/Error", self.y_pid.getPositionError())
+        # self.__ntTbl__.putNumber(
+        #     "yPID/Setpoint", self.y_pid.getSetpoint().position
+        # )
+        #
+        # t_p = self.__ntTbl__.getNumber("tPID/P", self.t_pid.getP())
+        # t_i = self.__ntTbl__.getNumber("tPID/I", self.t_pid.getI())
+        # t_d = self.__ntTbl__.getNumber("tPID/D", self.t_pid.getD())
+        # self.__ntTbl__.putNumber("tPID/Error", self.t_pid.getPositionError())
+        # self.__ntTbl__.putNumber(
+        #     "tPID/Setpoint", self.t_pid.getSetpoint().position
+        # )
+        #
+        # self.x_pid.setPID(x_p, x_i, x_d)
+        # self.y_pid.setPID(y_p, y_i, y_d)
+        # self.t_pid.setPID(t_p, t_i, t_d)
 
     def stop(self) -> None:
         self.run_chassis_speeds(ChassisSpeeds(0, 0, 0))
@@ -327,8 +356,8 @@ class Drivetrain(Subsystem):
         return estimated
 
     def get_angle(self) -> Rotation2d:
-        if self.is_real:
-            return self.get_pose().rotation()
+        # if self.is_real:
+        #     return self.get_pose().rotation()
         return self.gyro.getRotation2d()  # + Rotation2d.fromDegrees(180)
 
     def get_module_positions(self):
@@ -396,6 +425,22 @@ class Drivetrain(Subsystem):
         )
 
     # drive
+
+    def drive_angle(self, angle: Rotation2d) -> FunctionalCommand:
+        self.__ntTbl__.putNumber("SetAngle (Deg)", angle.degrees())
+        out = FunctionalCommand(
+            onInit=lambda: (),
+            onExecute=lambda: self.run_chassis_speeds(ChassisSpeeds(
+                0, 0, self.t_pid.calculate(self.get_angle().radians(),
+                                           angle.radians(),
+                                           self.t_pid.getConstraints()
+                                           ))),
+            isFinished=lambda: self.t_pid.atSetpoint(),
+            onEnd=lambda _interrupted: self.stop()
+
+        )
+        out.addRequirements(self)
+        return out
 
     def run_percentage(
         self,

@@ -9,7 +9,7 @@
       "maximized": "1",
       "style": "0",
       "userScale": "2",
-      "width": "636",
+      "width": "956",
       "xpos": "-953",
       "ypos": "-2093"
     }
@@ -60,17 +60,17 @@
     },
     "###Joysticks": {
       "Collapsed": "0",
-      "Pos": "999,626",
-      "Size": "796,217"
+      "Pos": "747,794",
+      "Size": "796,240"
     },
     "###NetworkTables": {
       "Collapsed": "0",
-      "Pos": "1131,37",
+      "Pos": "617,37",
       "Size": "771,719"
     },
     "###NetworkTables Info": {
       "Collapsed": "0",
-      "Pos": "617,816",
+      "Pos": "594,483",
       "Size": "1117,330"
     },
     "###Other Devices": {
