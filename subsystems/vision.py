@@ -69,14 +69,22 @@ class Vision(Subsystem):
 
     def periodic(self) -> None:
         self.get_odometry().addVisionMeasurement(
-            self.flEstimator.update(self.fl.getLatestResult()).estimatedPose.toPose2d()
+            self.flEstimator.update(
+                self.fl.getLatestResult()
+            ).estimatedPose.toPose2d()
         )
         self.get_odometry().addVisionMeasurement(
-            self.frEstimator.update(self.fr.getLatestResult()).estimatedPose.toPose2d()
+            self.frEstimator.update(
+                self.fr.getLatestResult()
+            ).estimatedPose.toPose2d()
         )
         self.get_odometry().addVisionMeasurement(
-            self.blEstimator.update(self.bl.getLatestResult()).estimatedPose.toPose2d()
+            self.blEstimator.update(
+                self.bl.getLatestResult()
+            ).estimatedPose.toPose2d()
         )
         self.get_odometry().addVisionMeasurement(
-            self.brEstimator.update(self.br.getLatestResult()).estimatedPose.toPose2d()
+            self.brEstimator.update(
+                self.br.getLatestResult()
+            ).estimatedPose.toPose2d()
         )

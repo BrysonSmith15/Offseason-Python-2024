@@ -41,8 +41,12 @@ class RobotContainer:
         # auto go brr
         NamedCommands.registerCommand("Shoot", self.shooter.shoot())
         NamedCommands.registerCommand("Elevator_Top", self.elevator.to_top())
-        NamedCommands.registerCommand("Elevator_Bottom", self.elevator.to_bottom())
-        NamedCommands.registerCommand("Intake_Run_In_Fast", self.intake.full_intake())
+        NamedCommands.registerCommand(
+            "Elevator_Bottom", self.elevator.to_bottom()
+        )
+        NamedCommands.registerCommand(
+            "Intake_Run_In_Fast", self.intake.full_intake()
+        )
         self.auto_chooser = AutoBuilder.buildAutoChooser()
         SmartDashboard.putData("Auto Mode", self.auto_chooser)
 
@@ -97,7 +101,9 @@ class RobotContainer:
 
         # drive 1 ft forwards
         self.interface.tmp_drive_forwards().onTrue(
-            DriveTranslation(self.drivetrain, Pose2d(feetToMeters(5), 0, Rotation2d(0)))
+            DriveTranslation(
+                self.drivetrain, Pose2d(feetToMeters(5), 0, Rotation2d(0))
+            )
         )
 
         # drive 1 ft backwards
@@ -114,11 +120,17 @@ class RobotContainer:
         self.interface.get_elevator_down().onTrue(self.elevator.to_bottom())
 
         # run intake slowly
-        self.interface.get_intake_forward().whileTrue(Intake_Run(self.intake, 0.25))
+        self.interface.get_intake_forward().whileTrue(
+            Intake_Run(self.intake, 0.25)
+        )
         # run intake full forward
-        self.interface.get_intake_full().whileTrue(Intake_Run(self.intake, 1.0))
+        self.interface.get_intake_full().whileTrue(
+            Intake_Run(self.intake, 1.0)
+        )
         # run intake reverse slowly
-        self.interface.get_intake_reverse().whileTrue(Intake_Run(self.intake, -0.25))
+        self.interface.get_intake_reverse().whileTrue(
+            Intake_Run(self.intake, -0.25)
+        )
 
         # make shooter go full speed
         self.interface.get_spin_shooter().whileTrue(Shoot(self.shooter))
@@ -146,13 +158,21 @@ class RobotContainer:
                     (
                         255
                         if DriverStation.getAlliance() is None
-                        else 255 if DriverStation.getAlliance().name == "kRed" else 0
+                        else (
+                            255
+                            if DriverStation.getAlliance().name == "kRed"
+                            else 0
+                        )
                     ),
                     0,
                     (
                         50
                         if DriverStation.getAlliance() is None
-                        else 255 if DriverStation.getAlliance().name == "kBlue" else 0
+                        else (
+                            255
+                            if DriverStation.getAlliance().name == "kBlue"
+                            else 0
+                        )
                     ),
                 ),
                 40,

@@ -50,8 +50,12 @@ class SwerveModule(Subsystem):
         )
 
         self.cancoder = CANcoder(encoder_id)
-        self.turn_motor = CANSparkMax(turn_id, CANSparkLowLevel.MotorType.kBrushless)
-        self.drive_motor = CANSparkMax(drive_id, CANSparkLowLevel.MotorType.kBrushless)
+        self.turn_motor = CANSparkMax(
+            turn_id, CANSparkLowLevel.MotorType.kBrushless
+        )
+        self.drive_motor = CANSparkMax(
+            drive_id, CANSparkLowLevel.MotorType.kBrushless
+        )
 
         self.cancoder.set_position(self.cancoder.get_absolute_position().value)
 
@@ -114,7 +118,8 @@ class SwerveModule(Subsystem):
 
     def periodic(self) -> None:
         self.network_table.putNumber(
-            "CANCoder Turn Rotations", self.cancoder.get_absolute_position().value
+            "CANCoder Turn Rotations",
+            self.cancoder.get_absolute_position().value,
         )
         self.network_table.putNumber(
             "Turn Motor Angle", self.getPosition().angle.degrees()
@@ -132,7 +137,9 @@ class SwerveModule(Subsystem):
             "Setpoint Speed (fps)", self.optimal_state.speed_fps
         )
         # 1 / 6 -> 2 in radius--1/6 becuase otherwise it is in/s, not fps
-        self.drive_velocity = self.drive_encoder.getVelocity() * -2 * math.pi * (1 / 6)
+        self.drive_velocity = (
+            self.drive_encoder.getVelocity() * -2 * math.pi * (1 / 6)
+        )
 
         self.network_table.putNumber(
             "Drive Speed (fps)",
@@ -174,7 +181,9 @@ class SwerveModule(Subsystem):
         ):
             self.drive_pid.setD(self.pid_net_table.getNumber("Drive D", 6e-5))
 
-    def setDesiredState(self, desiredState: SwerveModuleState, max_velocity_mps: float):
+    def setDesiredState(
+        self, desiredState: SwerveModuleState, max_velocity_mps: float
+    ):
         # currAnglePos = self.turn_encoder.getPosition()
         currAnglePos = self.getPosition().angle.degrees()
         currAngleRotation = Rotation2d().fromDegrees(currAnglePos)
@@ -237,10 +246,14 @@ class SwerveModule(Subsystem):
 
     def set_drive_idle(self, coast: bool):
         self.drive_motor.setIdleMode(
-            CANSparkMax.IdleMode.kCoast if coast else CANSparkMax.IdleMode.kBrake
+            CANSparkMax.IdleMode.kCoast
+            if coast
+            else CANSparkMax.IdleMode.kBrake
         )
 
     def set_turn_idle(self, coast: bool):
         self.turn_motor.setIdleMode(
-            CANSparkMax.IdleMode.kCoast if coast else CANSparkMax.IdleMode.kBrake
+            CANSparkMax.IdleMode.kCoast
+            if coast
+            else CANSparkMax.IdleMode.kBrake
         )

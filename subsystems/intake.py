@@ -1,4 +1,9 @@
-from commands2 import Subsystem, FunctionalCommand, InterruptionBehavior, InstantCommand
+from commands2 import (
+    Subsystem,
+    FunctionalCommand,
+    InterruptionBehavior,
+    InstantCommand,
+)
 from rev import CANSparkLowLevel, CANSparkMax
 from wpimath.filter import SlewRateLimiter
 from wpilib import RobotBase
@@ -15,11 +20,21 @@ class Intake(Subsystem):
 
         self.curr_speed: float = 0
 
-        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus2, 500)
-        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus3, 500)
-        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus4, 500)
-        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus5, 500)
-        self.motor.setPeriodicFramePeriod(CANSparkLowLevel.PeriodicFrame.kStatus6, 500)
+        self.motor.setPeriodicFramePeriod(
+            CANSparkLowLevel.PeriodicFrame.kStatus2, 500
+        )
+        self.motor.setPeriodicFramePeriod(
+            CANSparkLowLevel.PeriodicFrame.kStatus3, 500
+        )
+        self.motor.setPeriodicFramePeriod(
+            CANSparkLowLevel.PeriodicFrame.kStatus4, 500
+        )
+        self.motor.setPeriodicFramePeriod(
+            CANSparkLowLevel.PeriodicFrame.kStatus5, 500
+        )
+        self.motor.setPeriodicFramePeriod(
+            CANSparkLowLevel.PeriodicFrame.kStatus6, 500
+        )
 
     def set_motor(self, power: float) -> None:
         power = 1 if power > 1 else -1 if power < -1 else power

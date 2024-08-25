@@ -27,7 +27,9 @@ class Drive_Joystick(Command):
         super().__init__()
         self.setName("DriveByJoystick")
         self.addRequirements(drive)
-        self.network_table = NetworkTableInstance.getDefault().getTable("Drivetrain")
+        self.network_table = NetworkTableInstance.getDefault().getTable(
+            "Drivetrain"
+        )
 
         self.drivetrain = drive
         self.vx = lX
@@ -59,7 +61,9 @@ class Drive_Joystick(Command):
             mag = math.sqrt(hx * hx + hy * hy)
             robot_angle = self.drivetrain.get_angle().radians()
             goal_angle = Rotation2d(-hy, -hx).radians()
-            self.network_table.putNumber("DriveJoystick/Goal Angle", goal_angle)
+            self.network_table.putNumber(
+                "DriveJoystick/Goal Angle", goal_angle
+            )
             target = self.tPID.calculate(robot_angle, goal_angle)
             self.network_table.putNumber("DriveJoystick/target", target)
             r = target * mag

@@ -8,7 +8,9 @@ from subsystems.drivetrain import Drivetrain
 class Drive_Position(Command):
     def __init__(self, drivetrain: Drivetrain, desired_position: Pose2d):
         super().__init__()
-        self.net_table = NetworkTableInstance.getDefault().getTable("Drivetrain")
+        self.net_table = NetworkTableInstance.getDefault().getTable(
+            "Drivetrain"
+        )
         self.drivetrain = drivetrain
         self.addRequirements(drivetrain)
         self.desired = desired_position
@@ -34,8 +36,12 @@ class Drive_Position(Command):
             measurement=-position.rotation().radians(),
             goal=self.desired.rotation().radians(),
         )
-        self.drivetrain.__ntTbl__.putNumber("DrivePose/Desired X", self.desired.X())
-        self.drivetrain.__ntTbl__.putNumber("DrivePose/Desired Y", self.desired.Y())
+        self.drivetrain.__ntTbl__.putNumber(
+            "DrivePose/Desired X", self.desired.X()
+        )
+        self.drivetrain.__ntTbl__.putNumber(
+            "DrivePose/Desired Y", self.desired.Y()
+        )
         self.drivetrain.__ntTbl__.putNumber(
             "DrivePose/Desired Degrees", self.desired.rotation().degrees()
         )
@@ -46,14 +52,24 @@ class Drive_Position(Command):
         self.drivetrain.run_percentage(x_out, y_out, t_out)
 
     def isFinished(self) -> bool:
-        self.net_table.putBoolean("DrivePose/X At Setpoint", self.x_pid.atSetpoint())
-        self.net_table.putBoolean("DrivePose/Y At Setpoint", self.y_pid.atSetpoint())
+        self.net_table.putBoolean(
+            "DrivePose/X At Setpoint", self.x_pid.atSetpoint()
+        )
+        self.net_table.putBoolean(
+            "DrivePose/Y At Setpoint", self.y_pid.atSetpoint()
+        )
         self.net_table.putBoolean(
             "DrivePose/Theta At Setpoint", self.t_pid.atSetpoint()
         )
-        self.net_table.putNumber("DrivePose/X Error", self.x_pid.getPositionError())
-        self.net_table.putNumber("DrivePose/Y Error", self.y_pid.getPositionError())
-        self.net_table.putNumber("DrivePose/Theta Error", self.t_pid.getPositionError())
+        self.net_table.putNumber(
+            "DrivePose/X Error", self.x_pid.getPositionError()
+        )
+        self.net_table.putNumber(
+            "DrivePose/Y Error", self.y_pid.getPositionError()
+        )
+        self.net_table.putNumber(
+            "DrivePose/Theta Error", self.t_pid.getPositionError()
+        )
         return (
             self.x_pid.atSetpoint()
             and self.y_pid.atSetpoint()
@@ -66,6 +82,4 @@ class Drive_Position(Command):
         self.t_pid.reset(self.drivetrain.get_angle().radians())
 
     def __str__(self) -> str:
-        return (
-            f"Drive Position going to {self.desired} Scheduled?: {self.isScheduled()}"
-        )
+        return f"Drive Position going to {self.desired} Scheduled?: {self.isScheduled()}"

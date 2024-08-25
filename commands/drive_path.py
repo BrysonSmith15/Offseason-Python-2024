@@ -17,7 +17,9 @@ class Drive_Path(Command):
         self.x_pid = self.drivetrain.x_pid
         self.y_pid = self.drivetrain.y_pid
         self.t_pid = self.drivetrain.t_pid
-        self.net_table = NetworkTableInstance.getDefault().getTable("Drive Path")
+        self.net_table = NetworkTableInstance.getDefault().getTable(
+            "Drive Path"
+        )
 
         self.counter = 0
 
@@ -26,7 +28,9 @@ class Drive_Path(Command):
         self.x_pid.reset(curr_position.X())
         self.y_pid.reset(curr_position.Y())
         self.t_pid.reset(curr_position.rotation().radians())
-        self.path = self.curve(self.points[0], self.points[1], self.points[2], 4)
+        self.path = self.curve(
+            self.points[0], self.points[1], self.points[2], 4
+        )
         print(self.path)
         # set coast
         self.drivetrain.set_drive_idle(True)
@@ -34,8 +38,12 @@ class Drive_Path(Command):
 
     def execute(self) -> None:
         position = self.drivetrain.get_pose()
-        x_out = self.x_pid.calculate(measurement=position.X(), goal=self.path[0].X())
-        y_out = self.y_pid.calculate(measurement=position.Y(), goal=self.path[0].Y())
+        x_out = self.x_pid.calculate(
+            measurement=position.X(), goal=self.path[0].X()
+        )
+        y_out = self.y_pid.calculate(
+            measurement=position.Y(), goal=self.path[0].Y()
+        )
         t_out = self.t_pid.calculate(
             measurement=-position.rotation().radians(),
             goal=self.path[0].rotation().radians(),
@@ -92,24 +100,44 @@ class Drive_Path(Command):
 
         p01_interpolation = list(
             zip(
-                [lerp(p0.X(), p1.X(), i / nTimes) for i in range(1, nTimes + 1)],
-                [lerp(p0.Y(), p1.Y(), i / nTimes) for i in range(1, nTimes + 1)],
+                [
+                    lerp(p0.X(), p1.X(), i / nTimes)
+                    for i in range(1, nTimes + 1)
+                ],
+                [
+                    lerp(p0.Y(), p1.Y(), i / nTimes)
+                    for i in range(1, nTimes + 1)
+                ],
             )
         )
         p12_interpolation = list(
             zip(
-                [lerp(p1.X(), p2.X(), i / nTimes) for i in range(1, nTimes + 1)],
-                [lerp(p1.Y(), p2.Y(), i / nTimes) for i in range(1, nTimes + 1)],
+                [
+                    lerp(p1.X(), p2.X(), i / nTimes)
+                    for i in range(1, nTimes + 1)
+                ],
+                [
+                    lerp(p1.Y(), p2.Y(), i / nTimes)
+                    for i in range(1, nTimes + 1)
+                ],
             )
         )
         a = list(
             zip(
                 [
-                    lerp(p01_interpolation[i][0], p12_interpolation[i][0], i / nTimes)
+                    lerp(
+                        p01_interpolation[i][0],
+                        p12_interpolation[i][0],
+                        i / nTimes,
+                    )
                     for i in range(nTimes)
                 ],
                 [
-                    lerp(p01_interpolation[i][1], p12_interpolation[i][1], i / nTimes)
+                    lerp(
+                        p01_interpolation[i][1],
+                        p12_interpolation[i][1],
+                        i / nTimes,
+                    )
                     for i in range(nTimes)
                 ],
             )

@@ -21,7 +21,9 @@ def _red_pose_convert(pose: Pose2d):
     y = pose.Y()
     t = pose.rotation()
     return Pose2d(
-        feetToMeters(54) - x, feetToMeters(27) - y, Rotation2d.fromDegrees(180) - t
+        feetToMeters(54) - x,
+        feetToMeters(27) - y,
+        Rotation2d.fromDegrees(180) - t,
     )
 
 
@@ -62,14 +64,18 @@ def Shoot_And_Drive(
         starting_pose.X() + 0.5, starting_pose.Y(), starting_pose.rotation()
     )
     drivetrain.odometry.resetPosition(
-        drivetrain.get_angle(), drivetrain.get_module_positions(), starting_pose
+        drivetrain.get_angle(),
+        drivetrain.get_module_positions(),
+        starting_pose,
     )
     return Shoot_Only(elevator, intake, shooter).andThen(
         Drive_Path(drivetrain, [new_pose, new_pose, new_pose])
     )
 
 
-def Drive_Around(drivetrain: Drivetrain, red: bool = False) -> SequentialCommandGroup:
+def Drive_Around(
+    drivetrain: Drivetrain, red: bool = False
+) -> SequentialCommandGroup:
     p0 = Pose2d(1.4, 3.5, Rotation2d.fromDegrees(180))
     p1 = Pose2d(0, 0, Rotation2d(0))
     p2 = Pose2d(feetToMeters(54) / 2 + 1.75, 0.8, Rotation2d.fromDegrees(0))

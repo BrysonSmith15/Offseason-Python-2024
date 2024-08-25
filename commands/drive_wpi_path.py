@@ -10,7 +10,8 @@ class Drive_WPI_Path(Command):
     def __init__(self, drivetrain: Drivetrain, filename: str):
         super().__init__()
         deploy_directory = (
-            "\\".join(wpilib.getDeployDirectory().split("\\")[:-1]) + "\\output"
+            "\\".join(wpilib.getDeployDirectory().split("\\")[:-1])
+            + "\\output"
         )
         try:
             self.path = [
@@ -44,8 +45,12 @@ class Drive_WPI_Path(Command):
 
     def execute(self) -> None:
         position = self.drivetrain.get_pose()
-        x_out = self.x_pid.calculate(measurement=position.X(), goal=self.path[0].X())
-        y_out = self.y_pid.calculate(measurement=position.Y(), goal=self.path[0].Y())
+        x_out = self.x_pid.calculate(
+            measurement=position.X(), goal=self.path[0].X()
+        )
+        y_out = self.y_pid.calculate(
+            measurement=position.Y(), goal=self.path[0].Y()
+        )
         t_out = self.t_pid.calculate(
             measurement=-position.rotation().radians(),
             goal=self.path[0].rotation().radians(),
