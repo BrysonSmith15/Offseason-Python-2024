@@ -8,7 +8,7 @@ class LEDs(Subsystem):
         self.strip_len = strip_len
         self.led = AddressableLED(pwm_id)
         self.led.setLength(self.strip_len)
-        self.data = [AddressableLED.LEDData() for _i in range(0, strip_len)]
+        self.data = [AddressableLED.LEDData() for _ in range(0, strip_len)]
         self.led.setData(self.data)
         self.led.start()
 
