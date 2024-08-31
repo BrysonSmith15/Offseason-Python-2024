@@ -135,29 +135,47 @@ class Drivetrain(Subsystem):
         self.t_pid.enableContinuousInput(-math.pi, math.pi)
 
         self._xPIDp_listener = Tunable(
-            float, self.__ntTbl__, "xPID/P", self.x_pid.getP(),
-            lambda val: self.x_pid.setP(val)
+            float,
+            self.__ntTbl__,
+            "xPID/P",
+            self.x_pid.getP(),
+            lambda val: self.x_pid.setP(val),
         )
         self._xPIDi_listener = Tunable(
-            float, self.__ntTbl__, "xPID/I", self.x_pid.getI(),
-            lambda val: self.x_pid.setI(val)
+            float,
+            self.__ntTbl__,
+            "xPID/I",
+            self.x_pid.getI(),
+            lambda val: self.x_pid.setI(val),
         )
         self._xPIDd_listener = Tunable(
-            float, self.__ntTbl__, "xPID/D", self.x_pid.getD(),
-            lambda val: self.x_pid.setD(val)
+            float,
+            self.__ntTbl__,
+            "xPID/D",
+            self.x_pid.getD(),
+            lambda val: self.x_pid.setD(val),
         )
 
         self._yPIDp_listener = Tunable(
-            float, self.__ntTbl__, "yPID/P", self.y_pid.getP(),
-            lambda val: self.y_pid.setP(val)
+            float,
+            self.__ntTbl__,
+            "yPID/P",
+            self.y_pid.getP(),
+            lambda val: self.y_pid.setP(val),
         )
         self._yPIDi_listener = Tunable(
-            float, self.__ntTbl__, "yPID/I", self.y_pid.getI(),
-            lambda val: self.y_pid.setI(val)
+            float,
+            self.__ntTbl__,
+            "yPID/I",
+            self.y_pid.getI(),
+            lambda val: self.y_pid.setI(val),
         )
         self._yPIDd_listener = Tunable(
-            float, self.__ntTbl__, "yPID/D", self.y_pid.getD(),
-            lambda val: self.y_pid.setD(val)
+            float,
+            self.__ntTbl__,
+            "yPID/D",
+            self.y_pid.getD(),
+            lambda val: self.y_pid.setD(val),
         )
 
         self.__ntTbl__.putNumber("xPID/P", self.x_pid.getP())
@@ -430,14 +448,19 @@ class Drivetrain(Subsystem):
         self.__ntTbl__.putNumber("SetAngle (Deg)", angle.degrees())
         out = FunctionalCommand(
             onInit=lambda: (),
-            onExecute=lambda: self.run_chassis_speeds(ChassisSpeeds(
-                0, 0, self.t_pid.calculate(self.get_angle().radians(),
-                                           angle.radians(),
-                                           self.t_pid.getConstraints()
-                                           ))),
+            onExecute=lambda: self.run_chassis_speeds(
+                ChassisSpeeds(
+                    0,
+                    0,
+                    self.t_pid.calculate(
+                        self.get_angle().radians(),
+                        angle.radians(),
+                        self.t_pid.getConstraints(),
+                    ),
+                )
+            ),
             isFinished=lambda: self.t_pid.atSetpoint(),
-            onEnd=lambda _interrupted: self.stop()
-
+            onEnd=lambda _interrupted: self.stop(),
         )
         out.addRequirements(self)
         return out

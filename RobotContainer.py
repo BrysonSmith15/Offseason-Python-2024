@@ -124,9 +124,7 @@ class RobotContainer:
             self.intake.slow_intake()
         )
         # run intake full forward
-        self.interface.get_intake_full().whileTrue(
-            self.intake.full_intake()
-        )
+        self.interface.get_intake_full().whileTrue(self.intake.full_intake())
         # run intake reverse slowly
         self.interface.get_intake_reverse().whileTrue(
             self.intake.reverse_intake()
