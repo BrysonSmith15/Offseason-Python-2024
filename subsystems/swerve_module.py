@@ -52,12 +52,14 @@ class SwerveModule(Subsystem):
             "Swervemodule/Swerve PID"
         )
 
-        CANcoderConfiguration.with_magnet_sensor(
-            MagnetSensorConfigs.with_absolute_sensor_range(
-                AbsoluteSensorRangeValue.SIGNED_PLUS_MINUS_HALF
+        self.cancoder = CANcoder(encoder_id)
+        self.cancoder.configurator.apply(
+            CANcoderConfiguration.with_magnet_sensor(
+                MagnetSensorConfigs.with_absolute_sensor_range(
+                    AbsoluteSensorRangeValue.SIGNED_PLUS_MINUS_HALF
+                )
             )
         )
-        self.cancoder = CANcoder(encoder_id)
         self.cancoder.set_position(self.cancoder.get_absolute_position().value)
 
         self.turn_motor = CANSparkMax(
@@ -75,6 +77,10 @@ class SwerveModule(Subsystem):
         self.turn_pid.setPositionPIDWrappingEnabled(True)
         self.turn_pid.setPositionPIDWrappingMaxInput(180)
         self.turn_pid.setPositionPIDWrappingMaxInput(-180)
+
+        self.turn_motor.getEncoder().setPosition(
+            self.cancoder.get_absolute_position()
+        )
 
         self.drive_encoder = self.drive_motor.getEncoder()
         self.drive_encoder.setPosition(0)
