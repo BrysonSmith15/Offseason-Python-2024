@@ -2,7 +2,6 @@ import math
 
 from commands2 import Subsystem
 from ntcore import NetworkTable, NetworkTableInstance
-from phoenix6.hardware import CANcoder
 from rev import CANSparkLowLevel, CANSparkMax, SparkRelativeEncoder
 from wpimath import inputModulus
 from wpimath.controller import PIDController
@@ -10,6 +9,10 @@ from wpimath.filter import SlewRateLimiter
 from wpimath.geometry import Rotation2d, Translation2d
 from wpimath.kinematics import SwerveModulePosition, SwerveModuleState
 from wpimath.units import inchesToMeters, feetToMeters
+
+from phoenix6.hardware import CANcoder
+from phoenix6.configs import CANcoderConfiguration, MagnetSensorConfigs
+from phoenix6.signals import AbsoluteSensorRangeValue
 
 # consts
 drive_P = 1e-3
@@ -49,7 +52,14 @@ class SwerveModule(Subsystem):
             "Swervemodule/Swerve PID"
         )
 
+        CANcoderConfiguration.with_magnet_sensor(
+            MagnetSensorConfigs.with_absolute_sensor_range(
+                AbsoluteSensorRangeValue.SIGNED_PLUS_MINUS_HALF
+            )
+        )
         self.cancoder = CANcoder(encoder_id)
+        self.cancoder.set_position(self.cancoder.get_absolute_position().value)
+
         self.turn_motor = CANSparkMax(
             turn_id, CANSparkLowLevel.MotorType.kBrushless
         )
@@ -57,12 +67,14 @@ class SwerveModule(Subsystem):
             drive_id, CANSparkLowLevel.MotorType.kBrushless
         )
 
-        self.cancoder.set_position(self.cancoder.get_absolute_position().value)
-
         self.turn_motor.setInverted(turn_inverted)
 
-        self.turn_pid = PIDController(turn_P, turn_I, turn_D)
-        self.turn_pid.enableContinuousInput(-180, 180)
+        # self.turn_pid = PIDController(turn_P, turn_I, turn_D)
+        # self.turn_pid.enableContinuousInput(-180, 180)
+        self.turn_pid = self.turn_motor.getPIDController()
+        self.turn_pid.setPositionPIDWrappingEnabled(True)
+        self.turn_pid.setPositionPIDWrappingMaxInput(180)
+        self.turn_pid.setPositionPIDWrappingMaxInput(-180)
 
         self.drive_encoder = self.drive_motor.getEncoder()
         self.drive_encoder.setPosition(0)
@@ -73,8 +85,8 @@ class SwerveModule(Subsystem):
         # self.drive_pid.setP(drive_P)
         # self.drive_pid.setI(drive_I)
         # self.drive_pid.setD(drive_D)
-        # accelerate fully in 1 second, decelerate in 10
-        self.drive_limiter = SlewRateLimiter(2, -100)
+        # accelerate fully in 1 second, decelerate in 2.5
+        self.drive_limiter = SlewRateLimiter(1, -2.5)
 
         self.setName(f"SwerveModule/{subsystem_name}")
 
@@ -136,6 +148,7 @@ class SwerveModule(Subsystem):
         self.network_table.putNumber(
             "Setpoint Speed (fps)", self.optimal_state.speed_fps
         )
+
         # 1 / 6 -> 2 in radius--1/6 becuase otherwise it is in/s, not fps
         self.drive_velocity = (
             self.drive_encoder.getVelocity() * -2 * math.pi * (1 / 6)
@@ -202,17 +215,18 @@ class SwerveModule(Subsystem):
         drive_out = 1 if drive_out > 1 else -1 if drive_out < -1 else drive_out
         self.network_table.putNumber("Drive Out", drive_out)
         self.drive_motor.set(drive_out)
+        self.cancoder.get_absolute_position()
         # self.drive_motor.set(self.drive_limiter.calculate(velocity / 15))
-        turn_out = self.turn_pid.calculate(
-            self.getPosition().angle.degrees(),
-            inputModulus(optimalState.angle.degrees(), -180, 180),
-        )
-        turn_out = 1 if turn_out > 1 else -1 if turn_out < -1 else turn_out
-        self.turn_motor.set(turn_out)
-        # self.turn_pid.setReference(
-        #     inputModulus(optimalState.angle.degrees(), -180, 180) / 180,
-        #     CANSparkLowLevel.ControlType.kPosition,
+        # turn_out = self.turn_pid.calculate(
+        #     self.getPosition().angle.degrees(),
+        #     inputModulus(optimalState.angle.degrees(), -180, 180),
         # )
+        # turn_out = 1 if turn_out > 1 else -1 if turn_out < -1 else turn_out
+        # self.turn_motor.set(turn_out)
+        self.turn_pid.setReference(
+            inputModulus(optimalState.angle.degrees(), -180, 180) * 180,
+            CANSparkLowLevel.ControlType.kPosition,
+        )
 
     def getModulePosition(self) -> Translation2d:
         is_front = self.name[0] == "f"
