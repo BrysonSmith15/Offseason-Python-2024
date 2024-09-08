@@ -2,7 +2,6 @@ from commands2 import (
     Subsystem,
     FunctionalCommand,
     InterruptionBehavior,
-    InstantCommand,
 )
 from rev import CANSparkLowLevel, CANSparkMax
 from wpimath.filter import SlewRateLimiter

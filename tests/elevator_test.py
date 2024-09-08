@@ -4,8 +4,7 @@
 """
 
 from subsystems.elevator import Elevator
-from wpilib.simulation import DriverStationSim
-from wpilib import DigitalOutput
+from wpilib.simulation import DriverStationSim, DIOSim
 
 
 def test() -> None:
@@ -110,16 +109,15 @@ def test() -> None:
     my_command.execute()
     assert my_elevator.curr_speed == 0
 
-    # TODO: figure out simulation for the DIO ports
-    # test the default limit switch readers
-    # top_limit_out = DigitalOutput(my_elevator.bot_limit.getChannel())
-    # top_limit_out.set(False)
-    # assert not my_elevator.top_pressed()
-    # top_limit_out.set(True)
-    # assert my_elevator.top_pressed()
+    top_limit = DIOSim(0)
+    bottom_limit = DIOSim(1)
 
-    # bottom_limit_out = DigitalOutput(my_elevator.bot_limit.getChannel())
-    # bottom_limit_out.set(False)
-    # assert not my_elevator.bottom_pressed()
-    # bottom_limit_out.set(True)
-    # assert my_elevator.bottom_pressed()
+    top_limit.setValue(False)
+    assert not my_elevator.top_pressed()
+    top_limit.setValue(True)
+    assert my_elevator.top_pressed()
+
+    bottom_limit.setValue(False)
+    assert not my_elevator.bottom_pressed()
+    bottom_limit.setValue(True)
+    assert my_elevator.bottom_pressed()
